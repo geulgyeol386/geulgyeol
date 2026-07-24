@@ -379,7 +379,6 @@ function getFormData() {
   const checkbox = document.getElementById("useAiRecommendation");
 
   return {
-    id: "G" + Date.now(),
     createdAt: new Date().toLocaleString("ko-KR"),
     name: getValue("customerName"),
     phone: getValue("customerPhone"),

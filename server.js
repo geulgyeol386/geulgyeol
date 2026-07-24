@@ -9,7 +9,9 @@ const ROOT = path.resolve(__dirname);
 const DATA_DIR = path.resolve(process.env.DATA_DIR || path.join(ROOT, 'data'));
 const DATA_FILE = path.join(DATA_DIR, 'orders.json');
 const ADMIN_USER = process.env.ADMIN_USER || 'admin';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'change-this-password';
+const IS_RAILWAY = Boolean(process.env.RAILWAY_ENVIRONMENT_ID || process.env.RAILWAY_PROJECT_ID);
+// Railway에서는 기본 비밀번호로 폴백하지 않습니다. 환경변수가 실제 배포에 적용되어야만 관리자 로그인이 됩니다.
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || (IS_RAILWAY ? '' : 'change-this-password');
 
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
@@ -35,6 +37,59 @@ function writeOrders(rows) {
   const temp = DATA_FILE + '.tmp';
   fs.writeFileSync(temp, JSON.stringify(rows, null, 2), 'utf8');
   fs.renameSync(temp, DATA_FILE);
+}
+
+
+function orderYear(order, fallbackDate = new Date()) {
+  const iso = String(order && order.createdAtIso || '');
+  const match = iso.match(/^(\d{4})-/);
+  if (match) return match[1];
+  const idMatch = String(order && order.id || '').match(/^(\d{4})-\d{3,}$/);
+  if (idMatch) return idMatch[1];
+  return String(fallbackDate.getFullYear());
+}
+
+function nextOrderId(rows, date = new Date()) {
+  const year = String(date.getFullYear());
+  let max = 0;
+  for (const row of rows) {
+    const match = String(row && row.id || '').match(new RegExp('^' + year + '-(\\d+)$'));
+    if (match) max = Math.max(max, Number(match[1]) || 0);
+  }
+  return `${year}-${String(max + 1).padStart(3, '0')}`;
+}
+
+function migrateLegacyOrderIds() {
+  const rows = readOrders();
+  if (!rows.length) return;
+  const used = new Set(rows.map(r => String(r.id || '')).filter(id => /^\d{4}-\d{3,}$/.test(id)));
+  const counters = new Map();
+  for (const id of used) {
+    const [year, seq] = id.split('-');
+    counters.set(year, Math.max(counters.get(year) || 0, Number(seq) || 0));
+  }
+
+  let changed = false;
+  const ordered = [...rows].sort((a, b) => {
+    const aTime = Date.parse(a.createdAtIso || '') || Number(a.storageId) || 0;
+    const bTime = Date.parse(b.createdAtIso || '') || Number(b.storageId) || 0;
+    return aTime - bTime;
+  });
+
+  for (const row of ordered) {
+    const current = String(row.id || '');
+    if (/^\d{4}-\d{3,}$/.test(current)) continue;
+    const year = orderYear(row);
+    const next = (counters.get(year) || 0) + 1;
+    counters.set(year, next);
+    const newId = `${year}-${String(next).padStart(3, '0')}`;
+    row.id = newId;
+    changed = true;
+  }
+  if (changed) {
+    writeOrders(rows);
+    console.log('기존 주문번호를 연도-일련번호 형식으로 변환했습니다.');
+  }
 }
 
 function sendJson(res, status, payload) {
@@ -76,6 +131,11 @@ function basicAuthorized(req) {
 }
 
 function demandAdmin(req, res) {
+  if (!ADMIN_PASSWORD) {
+    res.writeHead(503, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' });
+    res.end('관리자 비밀번호가 서버에 적용되지 않았습니다. Railway의 staged changes를 Deploy해 주세요.');
+    return false;
+  }
   if (basicAuthorized(req)) return true;
   res.writeHead(401, {
     'WWW-Authenticate': 'Basic realm="Geulgyeol Admin", charset="UTF-8"',
@@ -85,10 +145,11 @@ function demandAdmin(req, res) {
   return false;
 }
 
-function sanitizeNewOrder(data) {
-  const now = new Date().toISOString();
+function sanitizeNewOrder(data, existingRows = []) {
+  const nowDate = new Date();
+  const now = nowDate.toISOString();
   return {
-    id: String(data.id || ('G' + Date.now())),
+    id: nextOrderId(existingRows, nowDate),
     createdAt: data.createdAt || new Date().toLocaleString('ko-KR'),
     name: String(data.name || '').slice(0, 100), phone: String(data.phone || '').slice(0, 50),
     email: String(data.email || '').slice(0, 200), workType: String(data.workType || '').slice(0, 100),
@@ -118,7 +179,7 @@ async function handleApi(req, res, pathname) {
       return sendJson(res, 400, { error: '필수 입력 항목이 빠졌습니다.' });
     }
     const rows = readOrders();
-    const order = sanitizeNewOrder(body);
+    const order = sanitizeNewOrder(body, rows);
     const maxId = rows.reduce((m, r) => Math.max(m, Number(r.storageId) || 0), 0);
     order.storageId = maxId + 1;
     rows.push(order);
@@ -158,7 +219,7 @@ async function handleApi(req, res, pathname) {
       for (const raw of body.orders) {
         const key = String(raw.id || raw.storageId || '');
         const existing = byKey.get(key);
-        const merged = { ...(existing || sanitizeNewOrder(raw)), ...raw, updatedAtIso: new Date().toISOString() };
+        const merged = { ...(existing || sanitizeNewOrder(raw, current)), ...raw, updatedAtIso: new Date().toISOString() };
         if (!merged.storageId) merged.storageId = ++maxId;
         byKey.set(String(merged.id || merged.storageId), merged);
       }
@@ -224,8 +285,11 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
+migrateLegacyOrderIds();
+
 server.listen(PORT, HOST, () => {
   console.log(`글결 서버 실행: http://${HOST}:${PORT}`);
   console.log(`데이터 위치: ${DATA_FILE}`);
-  if (ADMIN_PASSWORD === 'change-this-password') console.warn('주의: ADMIN_PASSWORD 환경변수를 반드시 변경하세요.');
+  if (!ADMIN_PASSWORD) console.warn('주의: Railway에 ADMIN_PASSWORD가 적용되지 않았습니다. Variables 변경 후 staged changes의 Deploy를 실행하세요.');
+  else if (!IS_RAILWAY && ADMIN_PASSWORD === 'change-this-password') console.warn('주의: 로컬 기본 관리자 비밀번호를 사용 중입니다.');
 });
