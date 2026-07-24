@@ -1,0 +1,7 @@
+Geulgyeol Ver7.02
+
+- Renamed all Korean artwork/image filenames to ASCII English filenames for GitHub/Railway stability.
+- Removed legacy encoded #U... duplicate image filenames.
+- Updated HTML/CSS/JS image references to the new filenames.
+- Replaced a missing legacy Korean image reference with writing-with-laptop.png.
+- Verified referenced local image files exist.

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>글결 관리자 | 주문·작품 관리</title>
+  <link rel="stylesheet" href="admin.css?v=6.24">
+</head>
+<body>
+  <header class="admin-header">
+    <div>
+      <p class="eyebrow">GEULGYEOL ADMIN</p>
+      <h1>주문·작품 관리</h1>
+    </div>
+    <a class="home-link" href="index.html">홈페이지로 돌아가기</a>
+  </header>
+
+  <main class="admin-main">
+    <section class="dashboard" aria-label="주문 현황">
+      <article><span>전체 주문</span><strong id="countAll">0</strong></article>
+      <article><span>신규 접수</span><strong id="countNew">0</strong></article>
+      <article><span>제작 중</span><strong id="countMaking">0</strong></article>
+      <article><span>발송 완료</span><strong id="countDone">0</strong></article>
+      <article><span>미입금</span><strong id="countUnpaid">0</strong></article>
+      <article><span>총 수입</span><strong id="totalRevenue">0원</strong></article>
+    </section>
+
+    <section class="toolbar">
+      <label class="search-box">
+        <span>검색</span>
+        <input id="searchInput" type="search" placeholder="고객명, 연락처, 작품종류, 주문번호">
+      </label>
+      <label>
+        <span>진행 상태</span>
+        <select id="statusFilter">
+          <option value="">전체 상태</option>
+          <option>신규 접수</option><option>상담 중</option><option>입금 완료</option>
+          <option>제작 중</option><option>제작 완료</option><option>발송 완료</option>
+        </select>
+      </label>
+      <label>
+        <span>입금 여부</span>
+        <select id="paymentFilter"><option value="">전체</option><option value="미입금">미입금</option><option value="입금 완료">입금 완료</option></select>
+      </label>
+      <button id="backupButton" type="button">자료 백업</button>
+      <label class="restore-label">자료 복원<input id="restoreInput" type="file" accept="application/json"></label>
+    </section>
+
+    <section class="orders-panel">
+      <div class="panel-heading">
+        <div><p class="eyebrow">ORDERS</p><h2>주문 목록</h2></div>
+        <p id="resultCount">0건</p>
+      </div>
+      <div id="orderList" class="order-list"></div>
+    </section>
+  </main>
+
+  <div id="detailModal" class="modal" hidden>
+    <div class="modal-backdrop" data-close="true"></div>
+    <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-head">
+        <div><p class="eyebrow">ORDER DETAIL</p><h2 id="modalTitle">주문 상세</h2></div>
+        <button type="button" class="close-button" data-close="true">×</button>
+      </div>
+      <form id="adminForm">
+        <input id="storageId" type="hidden">
+        <div id="customerSummary" class="customer-summary"></div>
+
+        <div class="form-grid">
+          <label><span>진행 상태</span><select id="adminStatus"><option>신규 접수</option><option>상담 중</option><option>입금 완료</option><option>제작 중</option><option>제작 완료</option><option>발송 완료</option></select></label>
+          <label><span>입금 여부</span><select id="adminPayment"><option>미입금</option><option>입금 완료</option></select></label>
+          <label><span>기본비용</span><input id="adminBasePrice" type="number" min="0" step="1000"></label>
+          <label><span>실제 받은 금액</span><input id="adminReceivedAmount" type="number" min="0" step="1000"></label>
+          <label><span>추가로 받은 마음</span><input id="adminExtraAmount" type="number" min="0" step="1000"></label>
+          <label><span>제작 완료일</span><input id="adminCompletedDate" type="date"></label>
+          <label class="full"><span>택배 송장번호</span><input id="adminTrackingNumber" type="text"></label>
+          <label class="full"><span>고객 후기</span><textarea id="adminReview" rows="3"></textarea></label>
+          <label class="full"><span>관리자 메모</span><textarea id="adminMemo" rows="4"></textarea></label>
+          <label class="check-field full"><input id="adminCustomerVisible" type="checkbox"><span>고객 주문 확인 페이지에 진행 상황과 완성 작품 공개</span></label>
+          <label class="full"><span>고객에게 전할 안내 메시지</span><textarea id="adminCustomerMessage" rows="3" placeholder="예: 작품이 완성되었습니다. 확인 후 연락 부탁드립니다."></textarea></label>
+          <label class="check-field full"><input id="adminPublic" type="checkbox"><span>고객 동의를 받아 완성 작품을 홈페이지 작품 사례로 공개</span></label>
+        </div>
+
+        <section class="image-section">
+          <div><h3>참고 이미지</h3><div id="referenceImages" class="image-grid"></div></div>
+          <div><h3>완성 작품 사진</h3><input id="completedImageInput" type="file" accept="image/*"><div id="completedImagePreview" class="image-grid"></div></div>
+        </section>
+
+        <section class="request-text" id="requestText"></section>
+
+        <div class="modal-actions">
+          <button type="button" id="printButton" class="secondary">의뢰서 인쇄</button>
+          <button type="button" id="deleteButton" class="danger">주문 삭제</button>
+          <button type="submit" class="primary">변경 내용 저장</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <script src="admin.js?v=6.24" defer></script>
+</body>
+</html>

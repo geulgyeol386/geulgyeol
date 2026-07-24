@@ -1,0 +1,1546 @@
+
+/* ==========================================================
+   글결 Ver.6.9 안정화 디자인
+   기존 기능과 인쇄 설정은 유지하고 화면 디자인만 최종 통제합니다.
+   ========================================================== */
+
+:root {
+  --gg-ink:#201812;
+  --gg-brown:#6e4e37;
+  --gg-red:#8e342c;
+  --gg-paper:rgba(252,248,239,.86);
+  --gg-card:rgba(255,252,246,.93);
+  --gg-line:rgba(82,58,39,.22);
+}
+
+html {
+  background:#eee1d0;
+}
+
+body {
+  color:var(--gg-ink);
+  background:
+    linear-gradient(rgba(249,243,233,.55), rgba(249,243,233,.55)),
+    url("images/background-invitation.jpg") center top / 100% auto repeat-y fixed !important;
+}
+
+/* 이전 버전의 고정 가상 배경 제거 */
+body::before,
+body::after {
+  display:none !important;
+}
+
+/* 상단 메뉴 */
+.site-header {
+  background:rgba(252,249,243,.92) !important;
+  border-bottom:1px solid var(--gg-line);
+  backdrop-filter:blur(12px);
+}
+
+/* 첫 화면: 글자가 섞인 목업이 아니라 실제로 잘라낸 작업 사진 사용 */
+.hero {
+  min-height:730px !important;
+  padding:86px 7% !important;
+  background:
+    linear-gradient(90deg,
+      rgba(250,246,238,1) 0%,
+      rgba(250,246,238,.99) 33%,
+      rgba(250,246,238,.88) 48%,
+      rgba(250,246,238,.38) 67%,
+      rgba(250,246,238,.05) 100%),
+    url("images/hero-calligrapher.jpg") 78% 50% / cover no-repeat !important;
+}
+
+.hero-overlay {
+  background:none !important;
+}
+
+.hero-inner {
+  width:min(1480px,100%);
+  margin:0 auto;
+  display:block !important;
+}
+
+.hero-content {
+  position:relative;
+  z-index:2;
+  max-width:700px !important;
+  padding:24px 20px !important;
+  background:transparent !important;
+  backdrop-filter:none !important;
+}
+
+.hero-visual {
+  display:none !important;
+}
+
+.hero h1 {
+  color:#17120e;
+  text-shadow:0 1px 0 rgba(255,255,255,.5);
+}
+
+/* 전체 섹션: 청첩장 배경을 끊지 않고 보이게 함 */
+main,
+.section,
+.meaning-section,
+.featured-section,
+.works-section,
+.process-section,
+.price-section,
+.request-section,
+.first-order-section {
+  background-color:transparent !important;
+  background-image:none !important;
+}
+
+/* 각 섹션은 얇은 한지층만 두어 배경이 보이도록 */
+.section {
+  position:relative;
+}
+
+.section::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  background:rgba(249,244,235,.63);
+  pointer-events:none;
+}
+
+.section > * {
+  position:relative;
+  z-index:1;
+}
+
+/* 글결 이야기에도 같은 청첩장 배경이 비치도록 먹빛 반투명층 */
+.story-section {
+  background:transparent !important;
+  color:#fff8eb;
+}
+
+.story-section::before {
+  background:rgba(26,21,17,.84) !important;
+}
+
+.story-section .story-wrap,
+.story-section .story-body p {
+  color:#f2e9dc;
+}
+
+/* 카드 가독성 */
+.meaning-card,
+.featured-card,
+.work-card,
+.process-grid article,
+.request-form,
+.request-preview,
+.saved-requests,
+.first-order-card {
+  background:var(--gg-card) !important;
+  border:1px solid var(--gg-line);
+  box-shadow:0 16px 42px rgba(53,36,24,.10);
+}
+
+/* 기본비용 영역 완전 복구 */
+.price-section {
+  color:var(--gg-ink) !important;
+}
+
+.price-section::before {
+  background:rgba(249,244,235,.72) !important;
+}
+
+.price-card {
+  max-width:1120px !important;
+  margin:0 auto !important;
+  padding:52px !important;
+  text-align:center;
+  color:var(--gg-ink) !important;
+  background:rgba(255,252,246,.94) !important;
+  border:1px solid var(--gg-line);
+  border-radius:26px;
+  box-shadow:0 18px 55px rgba(53,36,24,.13);
+}
+
+.price-card h2,
+.price-card > p,
+.price-included,
+.price-card .eyebrow {
+  color:var(--gg-ink) !important;
+  opacity:1 !important;
+}
+
+.price-card .eyebrow {
+  color:var(--gg-red) !important;
+}
+
+.pricing-grid {
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:28px !important;
+  margin:36px 0 28px !important;
+}
+
+.pricing-box {
+  overflow:hidden;
+  background:rgba(255,255,255,.78);
+  border:1px solid var(--gg-line);
+  border-radius:18px;
+}
+
+.pricing-box h3 {
+  margin:0 !important;
+  padding:16px 20px;
+  color:#fff !important;
+  background:#806047 !important;
+  font-size:23px;
+}
+
+.price-table {
+  max-width:none !important;
+  margin:0 !important;
+  border:none !important;
+}
+
+.price-row {
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) 135px !important;
+  align-items:center !important;
+  gap:12px !important;
+  min-height:66px;
+  padding:13px 18px !important;
+  text-align:left;
+  border-bottom:1px solid var(--gg-line) !important;
+}
+
+.price-row:last-child {
+  border-bottom:none !important;
+}
+
+.price-row span {
+  color:#2d241d !important;
+  opacity:1 !important;
+}
+
+.price-row strong {
+  color:#17120e !important;
+  font-size:22px !important;
+  text-align:right;
+  white-space:nowrap;
+  opacity:1 !important;
+}
+
+.price-guide {
+  padding:24px 28px;
+  text-align:left;
+  color:#2d241d !important;
+  background:rgba(244,235,222,.84);
+  border:1px solid var(--gg-line);
+  border-radius:16px;
+}
+
+.price-guide p {
+  color:#2d241d !important;
+  opacity:1 !important;
+  margin:7px 0;
+}
+
+.price-note {
+  margin-top:24px !important;
+  padding-top:20px !important;
+  color:#5b4030 !important;
+  border-top:1px solid var(--gg-line) !important;
+  opacity:1 !important;
+}
+
+/* 작품 이미지 누락 시 깨진 아이콘 대신 종이 카드 */
+.missing-work-image {
+  min-height:310px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(247,239,227,.95);
+}
+.missing-work-image::after {
+  content:"기존 작품 사진을 images 폴더에 넣으면 이곳에 표시됩니다";
+  max-width:240px;
+  padding:24px;
+  text-align:center;
+  color:#79624f;
+  font-size:15px;
+}
+
+/* 모바일 */
+@media (max-width:930px) {
+  body {
+    background-attachment:scroll !important;
+  }
+
+  .hero {
+    min-height:720px !important;
+    padding:60px 24px 70px !important;
+    background:
+      linear-gradient(180deg,
+        rgba(250,246,238,.15) 0%,
+        rgba(250,246,238,.28) 43%,
+        rgba(250,246,238,.96) 70%,
+        rgba(250,246,238,1) 100%),
+      url("images/hero-calligrapher.jpg") 62% 12% / auto 70% no-repeat !important;
+  }
+
+  .hero-content {
+    margin-top:360px;
+    padding:24px !important;
+    background:rgba(250,246,238,.89) !important;
+    border-radius:18px;
+  }
+
+  .pricing-grid {
+    grid-template-columns:1fr !important;
+  }
+
+  .price-card {
+    padding:28px 18px !important;
+  }
+}
+
+@media (max-width:560px) {
+  .price-row {
+    grid-template-columns:minmax(0,1fr) 105px !important;
+    padding:12px !important;
+  }
+
+  .price-row strong {
+    font-size:18px !important;
+  }
+}
+
+/* 인쇄 시 홈페이지 배경은 출력하지 않고 기존 의뢰서 인쇄 설정 유지 */
+@media print {
+  body {
+    background:#fff !important;
+  }
+
+  .section::before {
+    display:none !important;
+  }
+}
+
+
+/* ==========================================================
+   Ver.6.10 첫 화면 재구성 및 전체 배경 교체
+   ========================================================== */
+
+/* 새로 올린 세로 서예 작품을 전체 홈페이지 배경으로 사용 */
+body {
+  background:
+    linear-gradient(rgba(249,245,237,.64), rgba(249,245,237,.64)),
+    url("images/background-calligraphy.jpg") center top / 100% auto repeat-y fixed !important;
+}
+
+/* 첫 화면은 글자와 메뉴가 없는 깨끗한 작업 장면만 사용 */
+.hero {
+  min-height:730px !important;
+  padding:88px 7% !important;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(250,247,241,1) 0%,
+      rgba(250,247,241,.99) 31%,
+      rgba(250,247,241,.91) 44%,
+      rgba(250,247,241,.52) 59%,
+      rgba(250,247,241,.10) 76%,
+      rgba(250,247,241,.02) 100%
+    ),
+    url("images/hero-calligrapher-clean.jpg") 78% 50% / cover no-repeat !important;
+}
+
+/* 왼쪽 글씨 영역은 확실히 깨끗한 종이 면으로 유지 */
+.hero::before {
+  content:"";
+  position:absolute;
+  inset:0 auto 0 0;
+  width:47%;
+  z-index:0;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(250,247,241,1) 0%,
+      rgba(250,247,241,.995) 65%,
+      rgba(250,247,241,.76) 84%,
+      rgba(250,247,241,0) 100%
+    );
+  pointer-events:none;
+}
+
+.hero-inner,
+.hero-content {
+  position:relative;
+  z-index:2;
+}
+
+.hero-content {
+  max-width:690px !important;
+}
+
+/* 전체 섹션에서 배경 작품이 이전보다 조금 더 보이도록 */
+.section::before {
+  background:rgba(249,244,235,.70) !important;
+}
+
+.story-section::before {
+  background:rgba(26,21,17,.82) !important;
+}
+
+.price-section::before {
+  background:rgba(249,244,235,.74) !important;
+}
+
+/* 모바일 */
+@media (max-width:930px) {
+  body {
+    background-attachment:scroll !important;
+  }
+
+  .hero {
+    min-height:720px !important;
+    background:
+      linear-gradient(
+        180deg,
+        rgba(250,247,241,.10) 0%,
+        rgba(250,247,241,.25) 42%,
+        rgba(250,247,241,.94) 68%,
+        rgba(250,247,241,1) 100%
+      ),
+      url("images/hero-calligrapher-clean.jpg") 58% 10% / auto 69% no-repeat !important;
+  }
+
+  .hero::before {
+    display:none !important;
+  }
+}
+
+
+/* ==========================================================
+   Ver.6.11 반응형 개선
+   - 창이 좁아져도 인물의 얼굴과 상반신이 보이도록 조정
+   - 스마트폰에서는 이미지와 문구를 위아래로 분리
+   - 글결 이야기 영역은 짙은 먹빛 단색으로 가독성 확보
+   ========================================================== */
+
+/* 데스크톱: 오른쪽을 일부 잘라도 인물 중심을 유지 */
+.hero {
+  min-height:720px !important;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(250,247,241,1) 0%,
+      rgba(250,247,241,.99) 28%,
+      rgba(250,247,241,.88) 43%,
+      rgba(250,247,241,.38) 57%,
+      rgba(250,247,241,.05) 74%,
+      rgba(250,247,241,.02) 100%
+    ),
+    url("images/hero-calligrapher-clean.jpg") 72% 43% / cover no-repeat !important;
+}
+
+/* 중간 폭 화면: 인물이 왼쪽 밝은 면에 가려지지 않도록 우측 중심 유지 */
+@media (max-width:1250px) and (min-width:931px) {
+  .hero {
+    min-height:690px !important;
+    padding:76px 5% !important;
+    background:
+      linear-gradient(
+        90deg,
+        rgba(250,247,241,1) 0%,
+        rgba(250,247,241,.99) 31%,
+        rgba(250,247,241,.82) 44%,
+        rgba(250,247,241,.22) 57%,
+        rgba(250,247,241,.02) 74%
+      ),
+      url("images/hero-calligrapher-clean.jpg") 67% 40% / auto 100% no-repeat !important;
+  }
+
+  .hero::before {
+    width:42% !important;
+  }
+
+  .hero-content {
+    max-width:540px !important;
+  }
+
+  .hero h1 {
+    font-size:clamp(52px,6vw,76px) !important;
+  }
+}
+
+/* 태블릿 이하: 사진과 문구를 겹치지 않고 세로로 분리 */
+@media (max-width:930px) {
+  .hero {
+    min-height:auto !important;
+    display:block !important;
+    padding:0 0 54px !important;
+    background:
+      linear-gradient(rgba(0,0,0,.04), rgba(0,0,0,.12)),
+      url("images/hero-calligrapher-clean.jpg") 58% 28% / cover no-repeat !important;
+  }
+
+  .hero::before {
+    display:none !important;
+  }
+
+  .hero-inner {
+    padding-top:min(66vw,520px);
+  }
+
+  .hero-content {
+    width:calc(100% - 36px);
+    max-width:720px !important;
+    margin:0 auto !important;
+    padding:32px 28px !important;
+    color:#fffaf1 !important;
+    background:
+      linear-gradient(145deg,rgba(25,20,16,.96),rgba(43,32,24,.94)) !important;
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:20px;
+    box-shadow:0 18px 42px rgba(25,18,13,.24);
+  }
+
+  .hero h1,
+  .hero-message,
+  .hero-sub {
+    color:#fffaf1 !important;
+    text-shadow:none !important;
+  }
+
+  .hero .eyebrow {
+    color:#d9a66f !important;
+  }
+
+  .hero-sub {
+    opacity:.86;
+  }
+
+  .hero .button-dark {
+    background:#a46d3d !important;
+    border-color:#a46d3d !important;
+  }
+
+  .hero .button-light {
+    color:#fffaf1 !important;
+    background:transparent !important;
+    border-color:rgba(255,255,255,.72) !important;
+  }
+}
+
+/* 스마트폰: 얼굴과 붓 쓰는 동작이 화면 위에 충분히 보이도록 */
+@media (max-width:640px) {
+  .site-header {
+    min-height:64px;
+    padding:10px 18px;
+  }
+
+  .brand {
+    font-size:28px;
+  }
+
+  .main-nav {
+    overflow-x:auto;
+    white-space:nowrap;
+    padding-bottom:4px;
+    scrollbar-width:none;
+  }
+
+  .main-nav::-webkit-scrollbar {
+    display:none;
+  }
+
+  .main-nav a {
+    margin:5px 7px;
+    font-size:14px;
+  }
+
+  .hero {
+    padding-bottom:38px !important;
+    background:
+      linear-gradient(rgba(0,0,0,.02),rgba(0,0,0,.10)),
+      url("images/hero-calligrapher-clean.jpg") 56% 26% / auto 100vw no-repeat !important;
+    background-color:#e8d7c3 !important;
+  }
+
+  .hero-inner {
+    padding-top:92vw !important;
+  }
+
+  .hero-content {
+    width:calc(100% - 24px);
+    padding:27px 22px !important;
+    border-radius:16px;
+  }
+
+  .hero h1 {
+    font-size:clamp(42px,13vw,60px) !important;
+    line-height:1.18 !important;
+    letter-spacing:-3px !important;
+    margin-bottom:20px !important;
+  }
+
+  .hero-message {
+    font-size:20px !important;
+    line-height:1.65 !important;
+  }
+
+  .hero-sub {
+    font-size:17px !important;
+    line-height:1.65 !important;
+  }
+
+  .hero-actions {
+    display:grid !important;
+    grid-template-columns:1fr !important;
+  }
+
+  .hero-actions .button {
+    width:100%;
+    text-align:center;
+  }
+}
+
+/* 글결 이야기: 배경 글씨를 완전히 가리고 본문을 선명하게 */
+.story-section {
+  background:#211a16 !important;
+}
+
+.story-section::before {
+  background:
+    linear-gradient(145deg,rgba(25,20,17,.99),rgba(48,36,27,.97)) !important;
+}
+
+.story-section .eyebrow {
+  color:#d6a46f !important;
+}
+
+.story-section h2,
+.story-section .story-wrap h2 {
+  color:#fff9ee !important;
+}
+
+.story-section .story-body p {
+  color:#eee3d5 !important;
+  text-shadow:none !important;
+}
+
+.story-section .story-core-message {
+  color:#fff8e9 !important;
+  background:rgba(255,255,255,.035);
+  border-top-color:rgba(255,255,255,.24) !important;
+  border-bottom-color:rgba(255,255,255,.24) !important;
+}
+
+@media (max-width:640px) {
+  .story-section {
+    padding-top:72px !important;
+    padding-bottom:72px !important;
+  }
+
+  .story-section .story-body p {
+    font-size:18px !important;
+    line-height:1.9 !important;
+  }
+
+  .story-section .story-core-message {
+    font-size:22px !important;
+    line-height:1.75 !important;
+    padding:26px 18px !important;
+  }
+}
+
+
+/* ==========================================================
+   Ver.6.12 최종 첫 화면 및 안내문 가독성 개선
+   ========================================================== */
+
+/* 데스크톱: 승인된 원본풍 이미지 사용, 인물 얼굴 중심 유지 */
+.hero {
+  min-height:720px !important;
+  padding:84px 7% !important;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(25,20,16,.96) 0%,
+      rgba(30,23,18,.91) 25%,
+      rgba(35,26,20,.72) 39%,
+      rgba(35,26,20,.25) 55%,
+      rgba(35,26,20,.04) 72%,
+      rgba(35,26,20,0) 100%
+    ),
+    url("images/hero-final.jpg") 67% 43% / cover no-repeat !important;
+}
+
+.hero::before {
+  display:none !important;
+}
+
+.hero-content {
+  max-width:650px !important;
+  color:#fffaf0 !important;
+}
+
+.hero h1,
+.hero-message,
+.hero-sub {
+  color:#fffaf0 !important;
+  text-shadow:0 2px 8px rgba(0,0,0,.32) !important;
+}
+
+.hero .eyebrow {
+  color:#dfa86d !important;
+}
+
+.hero-sub {
+  color:#e7c58e !important;
+}
+
+.hero .button-dark {
+  background:#a66b35 !important;
+  border-color:#a66b35 !important;
+}
+
+.hero .button-light {
+  color:#fffaf0 !important;
+  background:rgba(20,15,12,.20) !important;
+  border-color:rgba(255,255,255,.74) !important;
+}
+
+/* 중간 폭: 인물을 화면 중앙 오른쪽에 고정 */
+@media (max-width:1250px) and (min-width:931px) {
+  .hero {
+    min-height:690px !important;
+    padding:72px 5% !important;
+    background:
+      linear-gradient(
+        90deg,
+        rgba(25,20,16,.97) 0%,
+        rgba(31,23,18,.92) 30%,
+        rgba(35,26,20,.55) 46%,
+        rgba(35,26,20,.10) 61%,
+        rgba(35,26,20,0) 100%
+      ),
+      url("images/hero-final.jpg") 58% 39% / auto 105% no-repeat !important;
+    background-color:#241a14 !important;
+  }
+
+  .hero-content {
+    max-width:520px !important;
+  }
+
+  .hero h1 {
+    font-size:clamp(50px,5.9vw,76px) !important;
+  }
+}
+
+/* 태블릿: 사진 위, 문구 아래 */
+@media (max-width:930px) {
+  .hero {
+    min-height:auto !important;
+    padding:0 0 46px !important;
+    display:block !important;
+    background:
+      url("images/hero-final.jpg") 50% 25% / cover no-repeat !important;
+    background-color:#2a1e17 !important;
+  }
+
+  .hero-inner {
+    padding-top:min(72vw,560px) !important;
+  }
+
+  .hero-content {
+    width:calc(100% - 32px);
+    max-width:720px !important;
+    margin:0 auto !important;
+    padding:32px 28px !important;
+    background:linear-gradient(145deg,rgba(25,19,15,.97),rgba(46,34,25,.96)) !important;
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:18px;
+    box-shadow:0 18px 44px rgba(0,0,0,.25);
+  }
+}
+
+/* 스마트폰: 얼굴과 붓 쓰는 손이 반드시 보이는 전용 배치 */
+@media (max-width:640px) {
+  .hero {
+    padding-bottom:32px !important;
+    background:
+      url("images/hero-final.jpg") 54% 20% / auto 94vw no-repeat !important;
+    background-color:#291d16 !important;
+  }
+
+  .hero-inner {
+    padding-top:96vw !important;
+  }
+
+  .hero-content {
+    width:calc(100% - 20px);
+    padding:25px 20px !important;
+    border-radius:15px;
+  }
+
+  .hero h1 {
+    font-size:clamp(40px,12.5vw,58px) !important;
+    line-height:1.18 !important;
+    letter-spacing:-3px !important;
+  }
+
+  .hero-message {
+    font-size:19px !important;
+    line-height:1.7 !important;
+  }
+
+  .hero-sub {
+    font-size:17px !important;
+    line-height:1.65 !important;
+  }
+
+  .hero-actions {
+    display:grid !important;
+    grid-template-columns:1fr !important;
+  }
+
+  .hero-actions .button {
+    width:100%;
+    text-align:center;
+  }
+}
+
+/* 가격 안내문: 밝은 글씨 문제 해결 */
+.price-guide {
+  padding:26px 30px !important;
+  background:#f2e5d3 !important;
+  border:1px solid #c8aa86 !important;
+  border-radius:16px !important;
+  text-align:left !important;
+}
+
+.price-guide p {
+  color:#2d2119 !important;
+  font-size:19px !important;
+  line-height:1.75 !important;
+  font-weight:600 !important;
+  opacity:1 !important;
+  margin:8px 0 !important;
+}
+
+.price-guide strong {
+  color:#7b2f27 !important;
+  font-weight:900 !important;
+}
+
+@media (max-width:640px) {
+  .price-guide {
+    padding:20px 18px !important;
+  }
+
+  .price-guide p {
+    font-size:17px !important;
+    line-height:1.7 !important;
+  }
+}
+
+
+/* ==========================================================
+   Ver.6.13 가로형 원본 이미지 적용
+   ========================================================== */
+
+.hero {
+  min-height:720px !important;
+  padding:84px 7% !important;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(25,20,16,.96) 0%,
+      rgba(29,22,17,.91) 28%,
+      rgba(35,26,20,.68) 43%,
+      rgba(35,26,20,.18) 58%,
+      rgba(35,26,20,.02) 72%,
+      rgba(35,26,20,0) 100%
+    ),
+    url("images/hero-wide-final.jpg") center center / cover no-repeat !important;
+}
+
+.hero-content {
+  max-width:650px !important;
+}
+
+@media (max-width:1250px) and (min-width:931px) {
+  .hero {
+    min-height:680px !important;
+    padding:70px 5% !important;
+    background:
+      linear-gradient(
+        90deg,
+        rgba(25,20,16,.97) 0%,
+        rgba(30,23,18,.92) 31%,
+        rgba(35,26,20,.58) 45%,
+        rgba(35,26,20,.10) 61%,
+        rgba(35,26,20,0) 100%
+      ),
+      url("images/hero-wide-final.jpg") 60% center / cover no-repeat !important;
+  }
+
+  .hero-content {
+    max-width:520px !important;
+  }
+}
+
+@media (max-width:930px) {
+  .hero {
+    min-height:auto !important;
+    padding:0 0 46px !important;
+    display:block !important;
+    background:
+      url("images/hero-wide-final.jpg") 63% center / cover no-repeat !important;
+    background-color:#2a1e17 !important;
+  }
+
+  .hero-inner {
+    padding-top:min(58vw,500px) !important;
+  }
+
+  .hero-content {
+    width:calc(100% - 32px);
+    max-width:720px !important;
+    margin:0 auto !important;
+    padding:32px 28px !important;
+    background:linear-gradient(145deg,rgba(25,19,15,.97),rgba(46,34,25,.96)) !important;
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:18px;
+    box-shadow:0 18px 44px rgba(0,0,0,.25);
+  }
+}
+
+@media (max-width:640px) {
+  .hero {
+    padding-bottom:30px !important;
+    background:
+      url("images/hero-wide-final.jpg") 67% center / auto 100% no-repeat !important;
+    background-color:#2a1e17 !important;
+  }
+
+  .hero-inner {
+    padding-top:78vw !important;
+  }
+
+  .hero-content {
+    width:calc(100% - 20px);
+    padding:24px 20px !important;
+    border-radius:15px;
+  }
+
+  .hero h1 {
+    font-size:clamp(40px,12vw,56px) !important;
+  }
+
+  .hero-message {
+    font-size:19px !important;
+  }
+
+  .hero-sub {
+    font-size:17px !important;
+  }
+}
+
+
+/* ==========================================================
+   Ver.6.14 첫 화면 이미지 직접 삽입
+   배경 CSS가 아니라 실제 <img> 요소로 표시하여 누락 방지
+   ========================================================== */
+
+.hero {
+  position:relative !important;
+  isolation:isolate;
+  overflow:hidden !important;
+  background:#241a14 !important;
+}
+
+.hero-photo {
+  position:absolute;
+  inset:0;
+  z-index:-2;
+  overflow:hidden;
+  background:#241a14;
+}
+
+.hero-photo img {
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:cover;
+  object-position:50% 50%;
+  filter:saturate(.94) contrast(.97) brightness(.92);
+}
+
+.hero::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  background:linear-gradient(
+    90deg,
+    rgba(24,19,15,.97) 0%,
+    rgba(29,22,17,.91) 28%,
+    rgba(35,26,20,.66) 43%,
+    rgba(35,26,20,.18) 58%,
+    rgba(35,26,20,.02) 73%,
+    rgba(35,26,20,0) 100%
+  );
+}
+
+.hero-overlay {
+  display:none !important;
+}
+
+.hero-inner,
+.hero-content {
+  position:relative;
+  z-index:2;
+}
+
+@media (max-width:1250px) and (min-width:931px) {
+  .hero-photo img {
+    object-position:58% 50%;
+  }
+
+  .hero::after {
+    background:linear-gradient(
+      90deg,
+      rgba(24,19,15,.98) 0%,
+      rgba(30,23,18,.93) 31%,
+      rgba(35,26,20,.55) 46%,
+      rgba(35,26,20,.08) 62%,
+      rgba(35,26,20,0) 100%
+    );
+  }
+}
+
+@media (max-width:930px) {
+  .hero {
+    padding:0 0 46px !important;
+    min-height:auto !important;
+  }
+
+  .hero-photo {
+    position:relative;
+    inset:auto;
+    z-index:0;
+    height:min(58vw,500px);
+  }
+
+  .hero-photo img {
+    object-position:64% 50%;
+    filter:saturate(.95) contrast(.98) brightness(.94);
+  }
+
+  .hero::after {
+    display:none;
+  }
+
+  .hero-inner {
+    padding-top:0 !important;
+  }
+
+  .hero-content {
+    position:relative;
+    z-index:2;
+    margin-top:0 !important;
+  }
+}
+
+@media (max-width:640px) {
+  .hero-photo {
+    height:78vw;
+    min-height:280px;
+    max-height:430px;
+  }
+
+  .hero-photo img {
+    object-position:68% 50%;
+  }
+}
+
+
+/* ==========================================================
+   Ver.6.15 첫 화면 이미지 표시 오류 수정
+   원인: hero-photo가 음수 z-index라 hero 배경 뒤로 숨었음
+   ========================================================== */
+.hero {
+  isolation:isolate !important;
+  background:#241a14 !important;
+}
+
+.hero-photo {
+  position:absolute !important;
+  inset:0 !important;
+  z-index:0 !important;
+  display:block !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  overflow:hidden !important;
+}
+
+.hero-photo img {
+  width:100% !important;
+  height:100% !important;
+  display:block !important;
+  object-fit:cover !important;
+  object-position:center center !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  filter:saturate(.96) contrast(.98) brightness(.94) !important;
+}
+
+.hero::after {
+  z-index:1 !important;
+}
+
+.hero-inner,
+.hero-content {
+  position:relative !important;
+  z-index:2 !important;
+}
+
+@media (max-width:1250px) and (min-width:931px) {
+  .hero-photo img {
+    object-position:60% center !important;
+  }
+}
+
+@media (max-width:930px) {
+  .hero-photo {
+    position:relative !important;
+    inset:auto !important;
+    z-index:0 !important;
+    height:min(58vw,500px) !important;
+  }
+
+  .hero-photo img {
+    object-position:64% center !important;
+  }
+
+  .hero-inner,
+  .hero-content {
+    z-index:2 !important;
+  }
+}
+
+@media (max-width:640px) {
+  .hero-photo {
+    height:78vw !important;
+    min-height:280px !important;
+    max-height:430px !important;
+  }
+
+  .hero-photo img {
+    object-position:68% center !important;
+  }
+}
+
+
+/* ==========================================================
+   Ver.6.16 새 가로형 첫 화면 이미지 적용
+   ========================================================== */
+.hero-photo img {
+  object-position:50% center !important;
+  filter:saturate(.96) contrast(.98) brightness(.93) !important;
+}
+
+@media (max-width:1250px) and (min-width:931px) {
+  .hero-photo img {
+    object-position:62% center !important;
+  }
+}
+
+@media (max-width:930px) {
+  .hero-photo img {
+    object-position:70% center !important;
+  }
+}
+
+@media (max-width:640px) {
+  .hero-photo img {
+    object-position:73% center !important;
+  }
+}
+
+
+/* ==========================================================
+   Ver.6.17
+   1) 사용자가 지정한 원본 사진을 수정 없이 적용
+   2) 인물 크기를 이전 두 버전의 중간 정도로 조정
+   3) 홈페이지 주요 글씨를 약 30% 확대
+   ========================================================== */
+
+/* 첫 화면 사진: 전체 구도를 더 많이 보여 주되 인물이 너무 작지 않게 */
+.hero {
+  min-height:700px !important;
+  padding:78px 6.5% !important;
+  background:#241b16 !important;
+}
+
+.hero-photo {
+  position:absolute !important;
+  inset:0 !important;
+  z-index:0 !important;
+  overflow:hidden !important;
+  background:#241b16 !important;
+}
+
+.hero-photo img {
+  width:100% !important;
+  height:100% !important;
+  display:block !important;
+  object-fit:cover !important;
+  object-position:50% 45% !important;
+  transform:scale(.91) !important;
+  transform-origin:center center !important;
+  filter:brightness(.93) saturate(.96) contrast(.98) !important;
+}
+
+/* 축소 때문에 생길 수 있는 가장자리 공간을 자연스럽게 채움 */
+.hero-photo::before {
+  content:"";
+  position:absolute;
+  inset:-4%;
+  z-index:-1;
+  background:url("images/hero-wide-v17.jpg?v=617") center 45% / cover no-repeat;
+  filter:blur(10px) brightness(.70);
+  transform:scale(1.05);
+}
+
+.hero::after {
+  z-index:1 !important;
+  background:linear-gradient(
+    90deg,
+    rgba(23,18,14,.96) 0%,
+    rgba(27,21,16,.90) 25%,
+    rgba(33,25,19,.61) 40%,
+    rgba(33,25,19,.18) 55%,
+    rgba(33,25,19,.02) 72%,
+    rgba(33,25,19,0) 100%
+  ) !important;
+}
+
+.hero-inner,
+.hero-content {
+  z-index:2 !important;
+}
+
+.hero-content {
+  max-width:720px !important;
+}
+
+/* 메인 문구도 기존보다 약간 확대 */
+.hero h1 {
+  font-size:clamp(68px,5.7vw,98px) !important;
+  line-height:1.13 !important;
+}
+.hero-message {
+  font-size:27px !important;
+  line-height:1.65 !important;
+}
+.hero-sub {
+  font-size:21px !important;
+  line-height:1.7 !important;
+}
+.hero .eyebrow {
+  font-size:18px !important;
+}
+.hero .button {
+  font-size:18px !important;
+  padding:16px 26px !important;
+}
+
+/* 상단 메뉴와 로고 확대 */
+.brand {
+  font-size:34px !important;
+}
+.main-nav a {
+  font-size:17px !important;
+  margin-left:28px !important;
+}
+
+/* 홈페이지 전체의 주요 글씨 약 30% 확대 */
+.section .eyebrow,
+.price-card .eyebrow {
+  font-size:18px !important;
+}
+
+.section h2,
+.price-card h2 {
+  font-size:clamp(38px,3.2vw,52px) !important;
+  line-height:1.3 !important;
+}
+
+.section h3,
+.pricing-box h3,
+.work-card h3,
+.meaning-card h3,
+.featured-card h3,
+.process-card h3 {
+  font-size:25px !important;
+  line-height:1.4 !important;
+}
+
+.section p,
+.meaning-card p,
+.featured-card p,
+.work-card p,
+.process-card p,
+.story-body p,
+.price-guide p,
+.request-section p,
+.first-order-section p {
+  font-size:19px !important;
+  line-height:1.85 !important;
+}
+
+.meaning-card .meaning-char {
+  font-size:31px !important;
+}
+
+.price-row span,
+.price-row strong,
+.price-table,
+.pricing-box,
+.price-note {
+  font-size:18px !important;
+}
+
+.price-row strong {
+  font-size:21px !important;
+}
+
+label,
+input,
+select,
+textarea,
+button,
+.saved-requests,
+.request-form,
+.request-preview {
+  font-size:17px !important;
+}
+
+.button,
+button {
+  font-size:18px !important;
+}
+
+/* 글결 이야기 핵심 문구 */
+.story-section .story-core-message {
+  font-size:27px !important;
+  line-height:1.8 !important;
+}
+
+/* 중간 크기 화면 */
+@media (max-width:1250px) and (min-width:931px) {
+  .hero {
+    min-height:660px !important;
+    padding:68px 4.5% !important;
+  }
+
+  .hero-photo img {
+    object-position:55% 44% !important;
+    transform:scale(.94) !important;
+  }
+
+  .hero-content {
+    max-width:590px !important;
+  }
+
+  .hero h1 {
+    font-size:clamp(58px,6vw,80px) !important;
+  }
+
+  .hero-message {
+    font-size:23px !important;
+  }
+}
+
+/* 태블릿: 사진을 별도 영역으로 보여 전체 인물 보존 */
+@media (max-width:930px) {
+  .hero {
+    min-height:auto !important;
+    padding:0 0 46px !important;
+  }
+
+  .hero-photo {
+    position:relative !important;
+    inset:auto !important;
+    height:min(60vw,520px) !important;
+  }
+
+  .hero-photo img {
+    object-fit:cover !important;
+    object-position:61% 45% !important;
+    transform:scale(.96) !important;
+  }
+
+  .hero-inner {
+    padding-top:0 !important;
+  }
+
+  .hero-content {
+    width:calc(100% - 30px) !important;
+    margin:0 auto !important;
+    padding:34px 29px !important;
+  }
+
+  .main-nav a {
+    font-size:16px !important;
+    margin-left:16px !important;
+  }
+}
+
+/* 스마트폰: 인물이 잘리지 않도록 사진 높이 확보 */
+@media (max-width:640px) {
+  .site-header {
+    padding:11px 16px !important;
+  }
+
+  .brand {
+    font-size:30px !important;
+  }
+
+  .hero-photo {
+    height:76vw !important;
+    min-height:300px !important;
+    max-height:450px !important;
+  }
+
+  .hero-photo img {
+    object-fit:cover !important;
+    object-position:67% 43% !important;
+    transform:scale(.94) !important;
+  }
+
+  .hero-content {
+    width:calc(100% - 20px) !important;
+    padding:27px 21px !important;
+  }
+
+  .hero h1 {
+    font-size:clamp(45px,13vw,62px) !important;
+  }
+
+  .hero-message {
+    font-size:20px !important;
+  }
+
+  .hero-sub {
+    font-size:18px !important;
+  }
+
+  .section h2,
+  .price-card h2 {
+    font-size:34px !important;
+  }
+
+  .section h3,
+  .pricing-box h3,
+  .work-card h3,
+  .meaning-card h3 {
+    font-size:22px !important;
+  }
+
+  .section p,
+  .meaning-card p,
+  .featured-card p,
+  .work-card p,
+  .process-card p,
+  .story-body p,
+  .price-guide p {
+    font-size:17px !important;
+  }
+
+  .price-row span,
+  .price-row strong {
+    font-size:16px !important;
+  }
+}
+
+/* Ver6.22 글결의 마음 강조 박스 및 푸터 서명 */
+.gyeolgyeol-heart-box {
+  margin-top:28px;
+  padding:28px 32px 26px;
+  border:1px solid rgba(164,123,72,.38);
+  border-left:5px solid #9b6b34;
+  border-radius:16px;
+  background:linear-gradient(135deg, rgba(255,253,247,.98), rgba(249,242,229,.92));
+  box-shadow:0 12px 30px rgba(92,63,34,.07);
+  color:#4b392c;
+}
+
+.gyeolgyeol-heart-box p {
+  margin:0 0 13px;
+  font-size:17px;
+  line-height:1.85;
+  letter-spacing:-.01em;
+}
+
+.gyeolgyeol-heart-box p:last-child { margin-bottom:0; }
+
+.gyeolgyeol-heart-title {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:18px !important;
+  padding-bottom:12px;
+  border-bottom:1px solid rgba(164,123,72,.24);
+  font-size:22px !important;
+  font-weight:800;
+  color:#6f4b28;
+}
+
+.gyeolgyeol-heart-box .brand-word { color:#7a4d24; }
+
+.gyeolgyeol-heart-quote {
+  margin-top:18px !important;
+  padding-top:15px;
+  border-top:1px dashed rgba(164,123,72,.34);
+  text-align:center;
+  font-size:15px !important;
+  font-style:italic;
+  color:#735b47;
+}
+
+.footer-signature {
+  margin-top:28px;
+  padding-top:22px;
+  border-top:1px solid rgba(255,255,255,.2);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:7px;
+  letter-spacing:.04em;
+}
+
+.footer-signature span { font-size:15px; opacity:.9; }
+.footer-signature strong { font-size:25px; letter-spacing:.16em; }
+
+@media (max-width:640px) {
+  .gyeolgyeol-heart-box { padding:23px 20px 21px; }
+  .gyeolgyeol-heart-title { font-size:20px !important; }
+  .gyeolgyeol-heart-box p { font-size:16px !important; line-height:1.75; }
+  .gyeolgyeol-heart-quote { font-size:14px !important; }
+}
+
+
+/* Ver6.23 관리자 연결 */
+.admin-nav-link {
+  padding: 0.55rem 0.95rem;
+  border: 1px solid rgba(69, 43, 28, 0.35);
+  border-radius: 999px;
+  background: rgba(255, 252, 245, 0.75);
+}
+.admin-nav-link:hover { background: #4a3125; color: #fff; }
