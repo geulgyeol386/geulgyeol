@@ -294,7 +294,7 @@ async function handleApi(req, res, pathname) {
 }
 
 function serveStatic(req, res, pathname) {
-  if ((pathname === '/admin.html' || pathname === '/admin.js') && !demandAdmin(req, res)) return;
+  // Ver7.10B: 관리자 화면 자체는 열어두고, 실제 주문 데이터 API는 Basic 인증으로 보호합니다.
   if (pathname === '/') pathname = '/index.html';
   const relativePath = pathname.replace(/^[/\\]+/, '');
   const filePath = path.resolve(ROOT, relativePath);

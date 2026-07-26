@@ -4,12 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>글결 관리자 | 주문·작품 관리</title>
-  <link rel="stylesheet" href="admin.css?v=7.08a">
+  <link rel="stylesheet" href="admin.css?v=7.10b">
 </head>
 <body>
+  <div id="adminLogin" class="admin-login" hidden>
+    <form id="adminLoginForm" class="admin-login-card">
+      <p class="eyebrow">GEULGYEOL ADMIN</p>
+      <h2>관리자 로그인</h2>
+      <p>주문·작품 관리를 위해 관리자 인증이 필요합니다.</p>
+      <label><span>사용자 이름</span><input id="adminLoginUser" autocomplete="username" required></label>
+      <label><span>비밀번호</span><input id="adminLoginPassword" type="password" autocomplete="current-password" required></label>
+      <p id="adminLoginError" class="admin-login-error" hidden>아이디 또는 비밀번호를 확인해 주세요.</p>
+      <button type="submit">로그인</button>
+      <a href="index.html">홈페이지로 돌아가기</a>
+    </form>
+  </div>
   <header class="admin-header">
     <div>
-      <p class="eyebrow">GEULGYEOL ADMIN <span class="version-badge">Ver7.08B</span></p>
+      <p class="eyebrow">GEULGYEOL ADMIN <span class="version-badge">Ver7.10B</span></p>
       <h1>주문·작품 관리</h1>
     </div>
     <div class="admin-header-actions">

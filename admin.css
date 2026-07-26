@@ -22,3 +22,11 @@
 .admin-quick-nav button{border:0;border-radius:10px;background:#72533a;color:#fff;padding:11px 16px;font:inherit;font-weight:800;cursor:pointer}
 .admin-quick-nav span{font-size:13px;color:#6d6258}
 @media(max-width:680px){.admin-quick-nav{align-items:flex-start;flex-direction:column}.admin-quick-nav button{width:100%}}
+
+
+/* Ver7.10B 모바일 관리자 로그인 */
+.admin-login{position:fixed;inset:0;z-index:3000;display:grid;place-items:center;padding:20px;background:rgba(24,21,18,.78)}
+.admin-login[hidden]{display:none!important}
+.admin-login-card{width:min(420px,100%);display:grid;gap:14px;padding:26px;background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 28px 80px rgba(0,0,0,.35)}
+.admin-login-card h2{margin:0;font-size:28px}.admin-login-card p{margin:0;line-height:1.6;color:#6e6257}.admin-login-card label{display:grid;gap:7px}.admin-login-card label span{font-size:13px;font-weight:800}.admin-login-card input{width:100%;min-height:46px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit}.admin-login-card button{min-height:46px;border:0;border-radius:10px;background:#2d2924;color:#fff;font:inherit;font-weight:800;cursor:pointer}.admin-login-card a{text-align:center;color:#72533a}.admin-login-error{color:#a13f37!important;font-weight:700}
+@media(max-width:680px){.admin-header{flex-direction:column}.admin-header-actions{width:100%;justify-content:flex-start}.admin-main{padding:18px 12px 60px}.dashboard article{padding:14px}.orders-panel{padding:14px}.order-card{padding:13px}.modal{padding:8px}.modal-card{padding:18px 14px;border-radius:14px}.customer-summary{font-size:13px;overflow-wrap:anywhere}}

@@ -2345,3 +2345,84 @@ section {
   .story-help { display: block; }
   .story-help strong { display: block; margin-top: 4px; }
 }
+
+
+/* Ver7.10B 모바일 작업 의뢰서 최적화 */
+@media screen and (max-width: 700px) {
+  #requestPreview,
+  #requestPreview .print-sheet {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+  #requestPreview {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+  #requestPreview .print-sheet {
+    padding: 18px 14px !important;
+  }
+  #requestPreview .print-title h2 {
+    font-size: 28px !important;
+    line-height: 1.2 !important;
+  }
+  #requestPreview .print-title p {
+    font-size: 14px !important;
+    line-height: 1.65 !important;
+  }
+  #requestPreview .print-info-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    border: 0 !important;
+    gap: 9px !important;
+  }
+  #requestPreview .print-info-item {
+    display: grid !important;
+    grid-template-columns: 112px minmax(0,1fr) !important;
+    min-height: 0 !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+  }
+  #requestPreview .print-info-item strong,
+  #requestPreview .print-info-item span {
+    padding: 10px 11px !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    overflow-wrap: anywhere !important;
+    word-break: keep-all !important;
+  }
+  #requestPreview .print-section,
+  #requestPreview .print-reference-section {
+    margin-top: 12px !important;
+  }
+  #requestPreview .print-section p {
+    min-height: 0 !important;
+    max-height: none !important;
+    font-size: 14px !important;
+    line-height: 1.7 !important;
+  }
+  #requestPreview .print-section .final-sentence {
+    font-size: 17px !important;
+  }
+  #requestPreview .print-footer-row {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  #requestPreview .print-sign { text-align: left !important; }
+}
+
+.ai-source-notice {
+  margin: 12px 0 0;
+  padding: 11px 13px;
+  border-left: 3px solid var(--red);
+  border-radius: 8px;
+  background: #fbf5eb;
+  color: #5f4938;
+  font-size: .86rem;
+  line-height: 1.6;
+}
+.ai-source-notice strong { color: var(--red); }
