@@ -97,6 +97,7 @@ async function migrateLegacyRequests() {
 }
 
 let currentAiSuggestion = "";
+let currentAiWorkType = "";
 let referenceImageData1 = "";
 let referenceImageData2 = "";
 
@@ -106,6 +107,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (form) {
     form.addEventListener("submit", saveRequest);
+  }
+
+  const storyField = document.getElementById("requestStory");
+  if (storyField) {
+    storyField.addEventListener("input", updateStoryCount);
+    updateStoryCount();
   }
 
   if (modal) {
@@ -151,7 +158,7 @@ function toggleAiRecommendation() {
 
     const suggestion = document.getElementById("aiSuggestion");
     if (suggestion) {
-      suggestion.textContent = "참고 문구가 이곳에 표시됩니다.";
+      suggestion.textContent = "맞춤 문구가 이곳에 표시됩니다.";
     }
   }
 }
@@ -175,42 +182,33 @@ function getAiLengthSetting(range) {
   return settings[range] || settings.short;
 }
 
-function buildAiSuggestions(range, recipient) {
-  const prefix = recipient ? recipient + "께, " : "";
-  const groups = {
-    short: [
-      "늘 건강하고 행복하세요.",
-      "고맙고 사랑하는 마음을 전합니다.",
-      "앞날에 기쁨과 평안이 가득하기를 바랍니다."
-    ],
-    medium: [
-      "말로 다 전하지 못한 감사와 사랑을 이 글에 담아 오래도록 마음에 간직합니다.",
-      "함께한 소중한 시간에 감사드리며 앞으로의 모든 날에 건강과 행복이 가득하기를 바랍니다.",
-      "당신이 걸어온 빛나는 길에 존경을 보내며 새로운 시작에도 따뜻한 웃음이 함께하기를 기원합니다."
-    ],
-    long: [
-      "오랜 시간 한결같은 사랑과 정성으로 우리 곁을 지켜주신 마음에 깊이 감사드립니다. 앞으로의 날들도 건강과 평안 속에서 환한 웃음과 행복이 늘 함께하시기를 진심으로 기원합니다.",
-      "함께 걸어온 모든 순간이 소중한 추억이 되었듯 앞으로 맞이할 날들 또한 따뜻한 사랑과 기쁨으로 가득하기를 바랍니다. 말로 다 전하지 못한 존경과 감사의 마음을 이 글에 정성껏 담아 전합니다.",
-      "당신이 보여주신 따뜻한 마음과 성실한 삶은 우리에게 오래도록 빛나는 가르침이 되었습니다. 새로운 길을 시작하는 오늘, 건강과 행복이 늘 곁에 머물고 뜻하시는 모든 일이 아름답게 이루어지기를 바랍니다."
-    ],
-    veryLong: [
-      "지금까지 걸어오신 길마다 묵묵한 사랑과 정성이 깃들어 있었고, 그 따뜻한 마음은 우리 모두에게 든든한 힘과 귀한 가르침이 되었습니다. 말로는 다 표현하지 못한 깊은 감사와 존경을 이 글에 담아 전합니다. 앞으로 맞이하는 모든 날에도 건강과 평안이 늘 함께하고, 소망하시는 일마다 기쁨으로 이루어지며, 사랑하는 분들과 환한 웃음을 오래도록 나누시기를 진심으로 기원합니다.",
-      "함께한 시간 속에서 베풀어주신 사랑과 배려 덕분에 우리는 수많은 어려움을 이겨내고 오늘의 행복을 누릴 수 있었습니다. 언제나 변함없이 곁을 지켜주신 고마운 마음을 오래도록 잊지 않겠습니다. 이제부터 펼쳐질 새로운 날들이 지난날보다 더욱 평안하고 아름답기를 바라며, 몸과 마음 모두 건강하시고 매일의 삶 속에 따뜻한 웃음과 뜻깊은 기쁨이 가득하시기를 진심으로 기원합니다.",
-      "한결같은 성실함과 따뜻한 마음으로 걸어오신 빛나는 발자취에 깊은 존경을 보냅니다. 당신이 보여주신 삶의 모습은 곁에 있는 모든 이에게 용기와 희망이 되었으며 오래도록 기억될 소중한 가르침이 되었습니다. 새로운 시작을 맞이하는 이 순간, 지나온 날의 보람은 더욱 빛나고 앞으로의 시간은 사랑과 행복으로 풍성해지기를 바랍니다. 언제나 건강과 평안이 함께하고 뜻하시는 모든 소망이 아름답게 이루어지기를 마음 깊이 기원합니다."
-    ]
-  };
-
-  return (groups[range] || groups.short).map(function (sentence) {
-    return prefix + sentence;
-  });
+function updateStoryCount() {
+  const story = document.getElementById("requestStory");
+  const counter = document.getElementById("storyCount");
+  if (!story || !counter) return;
+  counter.textContent = story.value.length + " / 500자";
 }
 
-function makeRequestSentence() {
+function inferWorkTypeFromStory(story) {
+  const text = (story || "").toLowerCase();
+  if (/가훈|좌우명|교훈|집안.*글|가족.*뜻/.test(text)) return "가훈";
+  if (/청첩|결혼.*초대|예식.*초대|혼인.*초대/.test(text)) return "청첩장";
+  if (/입춘|입춘대길|건양다경/.test(text)) return "입춘첩";
+  if (/연하|새해|신년|설날/.test(text)) return "연하장";
+  if (/감사|고마움|퇴임|퇴직|은퇴|스승|선생님/.test(text)) return "감사의 글";
+  if (/축하|손주|출산|돌|생일|승진|개업|합격|입학|졸업/.test(text)) return "축하글";
+  if (/액자|걸어두|벽에|작품으로/.test(text)) return "액자";
+  return "기타";
+}
+
+async function makeRequestSentence() {
   const storyElement = document.getElementById("requestStory");
   const recipientElement = document.getElementById("recipient");
+  const moodElement = document.getElementById("writingMood");
   const suggestionBox = document.getElementById("aiSuggestion");
   const checkbox = document.getElementById("useAiRecommendation");
   const panel = document.getElementById("aiRecommendationPanel");
+  const button = document.getElementById("aiGenerateButton");
 
   if (!storyElement || !suggestionBox) {
     showMessage("페이지 연결에 문제가 있습니다. 새 파일로 교체한 뒤 다시 실행해 주세요.", "error");
@@ -222,6 +220,7 @@ function makeRequestSentence() {
 
   const story = storyElement.value.trim();
   const recipient = recipientElement ? recipientElement.value.trim() : "";
+  const writingMood = moodElement ? moodElement.value.trim() : "함께 상의";
 
   if (!story) {
     showMessage("먼저 ‘전하고 싶은 마음과 사연’을 적어주세요.", "error");
@@ -231,32 +230,64 @@ function makeRequestSentence() {
 
   const range = getSelectedAiLengthRange();
   const setting = getAiLengthSetting(range);
-  const suggestions = buildAiSuggestions(range, recipient);
   currentAiSuggestion = "";
+  currentAiWorkType = "";
+  suggestionBox.innerHTML = '<div class="ai-loading">AI가 사연의 뜻과 용도를 살펴보고 있습니다…</div>';
+  if (button) { button.disabled = true; button.textContent = "AI가 문구를 만들고 있습니다…"; }
 
-  suggestionBox.innerHTML = suggestions.map(function (sentence, index) {
-    const count = countSentenceCharacters(sentence);
-    const isInRange = count >= setting.min && count <= setting.max;
-    return `
-      <div class="ai-suggestion-card">
-        <div class="ai-suggestion-number">${index + 1}</div>
-        <div class="ai-suggestion-content">
-          <p>${escapeHtml(sentence)}</p>
-          <small class="${isInRange ? "range-ok" : "range-note"}">공백 제외 ${count}자 · ${setting.label} 기본비용 ${setting.price}</small>
+  try {
+    const response = await fetch("/api/ai/suggestions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ story, recipient, writingMood, range })
+    });
+
+    const result = await response.json().catch(function () { return {}; });
+    if (!response.ok) {
+      throw new Error(result.error || "AI 문구를 만들지 못했습니다.");
+    }
+
+    const suggestions = Array.isArray(result.suggestions) ? result.suggestions.slice(0, 3) : [];
+    if (suggestions.length === 0) throw new Error("AI가 추천 문구를 반환하지 않았습니다.");
+
+    currentAiWorkType = result.workType || inferWorkTypeFromStory(story);
+    window.generatedAiSuggestions = suggestions;
+
+    const purpose = result.purposeSummary ? `<p class="ai-purpose-summary">AI 판단: <strong>${escapeHtml(currentAiWorkType)}</strong> · ${escapeHtml(result.purposeSummary)}</p>` : `<p class="ai-purpose-summary">AI 판단 작품 유형: <strong>${escapeHtml(currentAiWorkType)}</strong></p>`;
+
+    suggestionBox.innerHTML = purpose + suggestions.map(function (item, index) {
+      const sentence = typeof item === "string" ? item : (item.text || "");
+      const label = typeof item === "object" && item.label ? item.label : ["간결한 작품형", "품격 있는 문장형", "함축적인 표현"][index];
+      const count = countSentenceCharacters(sentence);
+      const isInRange = count >= setting.min && count <= setting.max;
+      return `
+        <div class="ai-suggestion-card">
+          <div class="ai-suggestion-number">${index + 1}</div>
+          <div class="ai-suggestion-content">
+            <strong class="ai-suggestion-label">${escapeHtml(label)}</strong>
+            <p>${escapeHtml(sentence)}</p>
+            <small class="${isInRange ? "range-ok" : "range-note"}">공백 제외 ${count}자 · 희망 ${setting.label} · 기본비용 ${setting.price}</small>
+          </div>
+          <button type="button" onclick="useAiSuggestion(${index})">이 문구 사용하기</button>
         </div>
-        <button type="button" onclick="useAiSuggestion(${index})">이 문구 사용하기</button>
-      </div>
-    `;
-  }).join("");
+      `;
+    }).join("");
 
-  window.generatedAiSuggestions = suggestions;
-  showMessage("선택한 글자 수 기준에 맞춰 참고 문구 3개를 만들었습니다.", "success");
+    showMessage("AI가 사연의 목적을 판단해 맞춤 문구 3개를 제안했습니다.", "success");
+  } catch (error) {
+    console.error(error);
+    suggestionBox.innerHTML = `<div class="ai-error">${escapeHtml(error.message || "AI 문구 추천 중 오류가 발생했습니다.")}</div>`;
+    showMessage(error.message || "AI 문구 추천 중 오류가 발생했습니다.", "error");
+  } finally {
+    if (button) { button.disabled = false; button.textContent = "AI 맞춤 문구 만들기"; }
+  }
 }
 
 function useAiSuggestion(index) {
   const chosenSentence = document.getElementById("chosenSentence");
   const suggestions = window.generatedAiSuggestions || [];
-  const selected = suggestions[index];
+  const selectedItem = suggestions[index];
+  const selected = typeof selectedItem === "string" ? selectedItem : (selectedItem && selectedItem.text);
 
   if (!selected) {
     showMessage("먼저 ‘AI 참고 문구 만들기’를 눌러주세요.", "error");
@@ -383,7 +414,7 @@ function getFormData() {
     name: getValue("customerName"),
     phone: getValue("customerPhone"),
     email: getValue("customerEmail"),
-    workType: getValue("workType"),
+    workType: currentAiWorkType || inferWorkTypeFromStory(getValue("requestStory")),
     workShape: getValue("workShape"),
     workSize: getValue("workSize"),
     writingMood: getValue("writingMood"),
@@ -412,7 +443,6 @@ function validateRequest() {
   const requiredFields = [
     { id: "customerName", label: "성함" },
     { id: "customerPhone", label: "연락처" },
-    { id: "workType", label: "원하는 종류" },
     { id: "requestStory", label: "전하고 싶은 마음과 사연" }
   ];
 
@@ -513,7 +543,7 @@ function showRequestPreview(data, shouldScroll) {
         ${printInfo("성함", data.name)}
         ${printInfo("연락처", data.phone)}
         ${printInfo("이메일", data.email || "미입력")}
-        ${printInfo("원하는 종류", data.workType)}
+        ${printInfo("작품 유형", data.workType || "미분류")}
         ${printInfo("전하는 대상", data.recipient || "미입력")}
         ${printInfo("작품 형태", data.workShape || "함께 상의")}
         ${printInfo("희망 크기", data.workSize || "함께 상의")}

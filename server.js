@@ -10,6 +10,8 @@ const DATA_DIR = path.resolve(process.env.DATA_DIR || path.join(ROOT, 'data'));
 const ADMIN_USER = process.env.ADMIN_USER || 'admin';
 const IS_RAILWAY = Boolean(process.env.RAILWAY_ENVIRONMENT_ID || process.env.RAILWAY_PROJECT_ID);
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || (IS_RAILWAY ? '' : 'change-this-password');
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
+const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-5.6-luna';
 const { createStorage } = require('./storage');
 const storage = createStorage({ root: ROOT, dataDir: DATA_DIR });
 
@@ -80,7 +82,7 @@ function sanitizeNewOrder(data, orderNumber) {
     id: orderNumber,
     createdAt: data.createdAt || new Date().toLocaleString('ko-KR'),
     name: String(data.name || '').slice(0, 100), phone: String(data.phone || '').slice(0, 50),
-    email: String(data.email || '').slice(0, 200), workType: String(data.workType || '').slice(0, 100),
+    email: String(data.email || '').slice(0, 200), workType: String(data.workType || '미분류').slice(0, 100),
     workShape: String(data.workShape || '').slice(0, 100), workSize: String(data.workSize || '').slice(0, 100),
     writingMood: String(data.writingMood || '').slice(0, 100), dueDate: String(data.dueDate || '').slice(0, 50),
     recipient: String(data.recipient || '').slice(0, 200), story: String(data.story || '').slice(0, 5000),
@@ -98,12 +100,146 @@ function publicGalleryOrder(o) {
   return { workType: o.workType || '', sentence: o.sentence || '', completedDate: o.completedDate || '', completedImage: o.completedImage || '' };
 }
 
+function extractResponseText(payload) {
+  if (!payload || typeof payload !== 'object') return '';
+  if (typeof payload.output_text === 'string') return payload.output_text;
+  const parts = [];
+  for (const item of Array.isArray(payload.output) ? payload.output : []) {
+    if (item && item.type === 'message') {
+      for (const content of Array.isArray(item.content) ? item.content : []) {
+        if (content && (content.type === 'output_text' || content.type === 'text') && typeof content.text === 'string') {
+          parts.push(content.text);
+        }
+      }
+    }
+  }
+  return parts.join('\n').trim();
+}
+
+function parseAiJson(text) {
+  const cleaned = String(text || '').trim()
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```$/, '');
+  try { return JSON.parse(cleaned); } catch {}
+  const start = cleaned.indexOf('{');
+  const end = cleaned.lastIndexOf('}');
+  if (start >= 0 && end > start) return JSON.parse(cleaned.slice(start, end + 1));
+  throw new Error('AI 응답 형식을 해석하지 못했습니다.');
+}
+
+function aiLengthInstruction(range) {
+  const map = {
+    short: '각 문구는 공백 제외 15~29자를 목표로 하세요.',
+    medium: '각 문구는 공백 제외 30~59자를 목표로 하세요.',
+    long: '각 문구는 공백 제외 60~99자를 목표로 하세요.',
+    veryLong: '각 문구는 공백 제외 100~150자를 목표로 하세요.'
+  };
+  return map[range] || map.short;
+}
+
+async function createAiSuggestions(body) {
+  if (!OPENAI_API_KEY) {
+    const error = new Error('AI 연결 준비가 아직 되지 않았습니다. Railway Variables에 OPENAI_API_KEY를 등록해 주세요.');
+    error.status = 503;
+    throw error;
+  }
+
+  const story = String(body.story || '').trim().slice(0, 500);
+  const recipient = String(body.recipient || '').trim().slice(0, 200);
+  const writingMood = String(body.writingMood || '함께 상의').trim().slice(0, 100);
+  const range = String(body.range || 'short');
+  if (!story) {
+    const error = new Error('전하고 싶은 마음과 사연을 먼저 입력해 주세요.');
+    error.status = 400;
+    throw error;
+  }
+
+  const instructions = `당신은 한국 서예 작품을 위한 문구를 제안하는 '글결'의 문안 전문가입니다.
+고객이 작품 종류를 직접 고르지 않습니다. 사연을 읽고 실제 목적을 먼저 판단하세요.
+가능한 작품 유형: 가훈, 축하글, 청첩장, 감사의 글, 연하장, 입춘첩, 액자, 기타.
+
+핵심 원칙:
+- 사연의 목적과 원하는 뜻을 최우선으로 반영합니다.
+- 사연에 없는 감사, 존경, 이별, 축하 등의 감정을 임의로 끼워 넣지 않습니다.
+- 가훈이면 오래 걸어둘 수 있는 교훈적이고 함축적인 문구를 만듭니다.
+- 축하글이면 축하의 이유와 바라는 미래를 정확히 반영합니다.
+- 청첩장이면 하객에게 보내는 자연스럽고 품격 있는 초대 문구를 만듭니다.
+- 감사의 글이면 누구에게 무엇을 감사하는지 구체적으로 반영합니다.
+- 연하장과 입춘첩은 계절과 전통의 맥락에 맞춥니다.
+- 서예 작품으로 썼을 때 어색한 설명문, 광고문, 과도한 수식어는 피합니다.
+- 고객이 특정 뜻이나 고사성어를 말하면 그 의미를 정확히 살립니다.
+- 한자 표현은 의미가 정확하고 널리 통용되는 경우에만 한 후보에 제한하여 사용할 수 있습니다.
+- 서로 비슷한 문장을 반복하지 말고 성격이 다른 3안을 만듭니다.
+- ${aiLengthInstruction(range)}
+
+반드시 JSON만 반환하세요. 형식:
+{
+  "workType": "위 유형 중 하나",
+  "purposeSummary": "사연에서 파악한 목적을 25자 이내로 요약",
+  "suggestions": [
+    {"label":"간결한 작품형","text":"..."},
+    {"label":"품격 있는 문장형","text":"..."},
+    {"label":"함축적인 표현","text":"..."}
+  ]
+}`;
+
+  const userInput = `전하는 대상: ${recipient || '별도 지정 없음'}\n글씨 분위기: ${writingMood}\n전하고 싶은 마음과 사연: ${story}`;
+
+  const response = await fetch('https://api.openai.com/v1/responses', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${OPENAI_API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: OPENAI_MODEL,
+      instructions,
+      input: userInput,
+      reasoning: { effort: 'low' },
+      text: { verbosity: 'low' },
+      max_output_tokens: 900
+    })
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    console.error('OpenAI API error:', payload);
+    const error = new Error('AI 문구 추천 서비스에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.');
+    error.status = response.status >= 500 ? 502 : 500;
+    throw error;
+  }
+
+  const parsed = parseAiJson(extractResponseText(payload));
+  const allowedTypes = new Set(['가훈', '축하글', '청첩장', '감사의 글', '연하장', '입춘첩', '액자', '기타']);
+  const workType = allowedTypes.has(parsed.workType) ? parsed.workType : '기타';
+  const suggestions = (Array.isArray(parsed.suggestions) ? parsed.suggestions : [])
+    .map((item, index) => ({
+      label: String(item && item.label || ['간결한 작품형', '품격 있는 문장형', '함축적인 표현'][index] || '추천 문구').slice(0, 30),
+      text: String(item && item.text || '').trim().slice(0, 500)
+    }))
+    .filter(item => item.text)
+    .slice(0, 3);
+  if (suggestions.length < 3) throw new Error('AI 추천 문구가 충분히 생성되지 않았습니다. 다시 시도해 주세요.');
+
+  return {
+    workType,
+    purposeSummary: String(parsed.purposeSummary || '').trim().slice(0, 80),
+    suggestions
+  };
+}
+
 async function handleApi(req, res, pathname) {
   if (pathname === '/healthz') return sendJson(res, 200, { ok: true });
 
+  if (pathname === '/api/ai/suggestions' && req.method === 'POST') {
+    const body = await readJson(req, 128 * 1024);
+    const result = await createAiSuggestions(body);
+    return sendJson(res, 200, result);
+  }
+
   if (pathname === '/api/orders' && req.method === 'POST') {
     const body = await readJson(req);
-    if (!String(body.name || '').trim() || !String(body.phone || '').trim() || !String(body.workType || '').trim() || !String(body.story || '').trim()) {
+    if (!String(body.name || '').trim() || !String(body.phone || '').trim() || !String(body.story || '').trim()) {
       return sendJson(res, 400, { error: '필수 입력 항목이 빠졌습니다.' });
     }
     const order = await storage.createOrder(orderNumber => sanitizeNewOrder(body, orderNumber));
@@ -198,6 +334,7 @@ async function start() {
     server.listen(PORT, HOST, () => {
       console.log(`글결 서버 실행: http://${HOST}:${PORT}`);
       console.log(`주문 저장소: ${storage.usePostgres ? 'PostgreSQL' : storage.dataFile}`);
+      console.log(`AI 문구 추천: ${OPENAI_API_KEY ? OPENAI_MODEL : 'OPENAI_API_KEY 미설정'}`);
       if (!ADMIN_PASSWORD) console.warn('주의: Railway에 ADMIN_PASSWORD가 적용되지 않았습니다. Variables 변경 후 staged changes의 Deploy를 실행하세요.');
       else if (!IS_RAILWAY && ADMIN_PASSWORD === 'change-this-password') console.warn('주의: 로컬 기본 관리자 비밀번호를 사용 중입니다.');
     });

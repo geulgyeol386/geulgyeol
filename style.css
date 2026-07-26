@@ -2303,3 +2303,45 @@ section {
 @media (max-width: 480px) {
   .ai-length-options { grid-template-columns: 1fr; }
 }
+
+/* Ver7.09 AI 맞춤 문구 */
+.story-help {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  color: #7b6a5b;
+  line-height: 1.5;
+}
+.story-help strong { white-space: nowrap; color: #8b4d34; }
+.ai-privacy-notice {
+  margin: 10px 0 0;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: #7b6a5b;
+}
+.ai-purpose-summary {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f5eee3;
+  color: #4b3b30;
+}
+.ai-suggestion-label {
+  display: inline-block;
+  margin-bottom: 4px;
+  font-size: 0.86rem;
+  color: #8b4d34;
+}
+.ai-loading, .ai-error {
+  padding: 18px;
+  border-radius: 12px;
+  text-align: center;
+  background: #f7f1e8;
+}
+.ai-error { color: #9b2f25; }
+.ai-generate-button:disabled { opacity: .65; cursor: wait; }
+@media (max-width: 700px) {
+  .story-help { display: block; }
+  .story-help strong { display: block; margin-top: 4px; }
+}
