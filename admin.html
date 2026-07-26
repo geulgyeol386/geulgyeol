@@ -4,18 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>글결 관리자 | 주문·작품 관리</title>
-  <link rel="stylesheet" href="admin.css?v=6.24">
+  <link rel="stylesheet" href="admin.css?v=7.08a">
 </head>
 <body>
   <header class="admin-header">
     <div>
-      <p class="eyebrow">GEULGYEOL ADMIN</p>
+      <p class="eyebrow">GEULGYEOL ADMIN <span class="version-badge">Ver7.08B</span></p>
       <h1>주문·작품 관리</h1>
     </div>
-    <a class="home-link" href="index.html">홈페이지로 돌아가기</a>
+    <div class="admin-header-actions">
+      <button id="ordersViewButton" type="button" class="header-tab is-active">주문 관리</button>
+      <button id="settlementViewButton" type="button" class="header-tab">월별 결산</button>
+      <a class="home-link" href="index.html">홈페이지로 돌아가기</a>
+    </div>
   </header>
 
   <main class="admin-main">
+    <div id="ordersView">
     <section class="dashboard" aria-label="주문 현황">
       <article><span>전체 주문</span><strong id="countAll">0</strong></article>
       <article><span>신규 접수</span><strong id="countNew">0</strong></article>
@@ -35,7 +40,7 @@
         <select id="statusFilter">
           <option value="">전체 상태</option>
           <option>신규 접수</option><option>상담 중</option><option>입금 완료</option>
-          <option>제작 중</option><option>제작 완료</option><option>발송 완료</option>
+          <option>제작 중</option><option>제작 완료</option><option>발송 완료</option><option>취소·미진행</option>
         </select>
       </label>
       <label>
@@ -46,12 +51,60 @@
       <label class="restore-label">자료 복원<input id="restoreInput" type="file" accept="application/json"></label>
     </section>
 
+    <div class="admin-quick-nav"><button id="settlementQuickButton" type="button">월별 결산 보기</button><span>월별 주문·진행률·수입을 한눈에 확인합니다.</span></div>
+
     <section class="orders-panel">
       <div class="panel-heading">
         <div><p class="eyebrow">ORDERS</p><h2>주문 목록</h2></div>
         <p id="resultCount">0건</p>
       </div>
       <div id="orderList" class="order-list"></div>
+    </section>
+    </div>
+
+    <section id="settlementView" class="settlement-view" hidden>
+      <div class="settlement-heading">
+        <div>
+          <p class="eyebrow">MONTHLY REPORT</p>
+          <h2>월별 결산</h2>
+          <p class="settlement-help">접수된 주문이 실제 제작과 수입으로 얼마나 이어졌는지 월별로 확인합니다.</p>
+        </div>
+        <div class="settlement-controls">
+          <label><span>결산 월</span><input id="settlementMonth" type="month"></label>
+          <button id="settlementCsvButton" type="button">CSV 저장</button>
+          <button id="settlementPrintButton" type="button">결산 인쇄</button>
+        </div>
+      </div>
+
+      <div class="settlement-dashboard">
+        <article><span>전체 주문</span><strong id="settleAll">0건</strong></article>
+        <article><span>실제 진행</span><strong id="settleProceed">0건</strong></article>
+        <article><span>발송 완료</span><strong id="settleShipped">0건</strong></article>
+        <article><span>취소·미진행</span><strong id="settleCancelled">0건</strong></article>
+        <article><span>실제 진행률</span><strong id="settleRate">0%</strong></article>
+        <article><span>실제 총수입</span><strong id="settleRevenue">0원</strong></article>
+      </div>
+
+      <div class="settlement-grid">
+        <section class="settlement-card">
+          <div class="card-title"><h3>금액 결산</h3><span id="settleMonthLabel"></span></div>
+          <div class="money-summary">
+            <div><span>진행 주문 기본비용 합계</span><strong id="settleBase">0원</strong></div>
+            <div><span>실제 받은 금액</span><strong id="settleReceived">0원</strong></div>
+            <div><span>추가로 받은 마음</span><strong id="settleExtra">0원</strong></div>
+            <div class="emphasis"><span>실제 총수입</span><strong id="settleRevenueDetail">0원</strong></div>
+          </div>
+        </section>
+        <section class="settlement-card">
+          <div class="card-title"><h3>작품 종류별 현황</h3></div>
+          <div class="table-wrap"><table class="settlement-table"><thead><tr><th>작품 종류</th><th>접수</th><th>실제 진행</th><th>수입</th></tr></thead><tbody id="workTypeSummary"></tbody></table></div>
+        </section>
+      </div>
+
+      <section class="settlement-card full-card">
+        <div class="card-title"><h3>월간 주문 내역</h3><span id="settleOrderCount">0건</span></div>
+        <div class="table-wrap"><table class="settlement-table order-summary-table"><thead><tr><th>접수일</th><th>주문번호</th><th>고객</th><th>작품 종류</th><th>진행 상태</th><th>입금</th><th>실제 수입</th><th>메모</th></tr></thead><tbody id="monthlyOrderRows"></tbody></table></div>
+      </section>
     </section>
   </main>
 
@@ -67,7 +120,7 @@
         <div id="customerSummary" class="customer-summary"></div>
 
         <div class="form-grid">
-          <label><span>진행 상태</span><select id="adminStatus"><option>신규 접수</option><option>상담 중</option><option>입금 완료</option><option>제작 중</option><option>제작 완료</option><option>발송 완료</option></select></label>
+          <label><span>진행 상태</span><select id="adminStatus"><option>신규 접수</option><option>상담 중</option><option>입금 완료</option><option>제작 중</option><option>제작 완료</option><option>발송 완료</option><option>취소·미진행</option></select></label>
           <label><span>입금 여부</span><select id="adminPayment"><option>미입금</option><option>입금 완료</option></select></label>
           <label><span>기본비용</span><input id="adminBasePrice" type="number" min="0" step="1000"></label>
           <label><span>실제 받은 금액</span><input id="adminReceivedAmount" type="number" min="0" step="1000"></label>
@@ -76,6 +129,7 @@
           <label class="full"><span>택배 송장번호</span><input id="adminTrackingNumber" type="text"></label>
           <label class="full"><span>고객 후기</span><textarea id="adminReview" rows="3"></textarea></label>
           <label class="full"><span>관리자 메모</span><textarea id="adminMemo" rows="4"></textarea></label>
+          <label class="full"><span>취소·미진행 사유</span><textarea id="adminCancelReason" rows="2" placeholder="예: 상담 후 고객 사정으로 미진행, 가격 부담, 일정 불일치 등"></textarea></label>
           <label class="check-field full"><input id="adminCustomerVisible" type="checkbox"><span>고객 주문 확인 페이지에 진행 상황과 완성 작품 공개</span></label>
           <label class="full"><span>고객에게 전할 안내 메시지</span><textarea id="adminCustomerMessage" rows="3" placeholder="예: 작품이 완성되었습니다. 확인 후 연락 부탁드립니다."></textarea></label>
           <label class="check-field full"><input id="adminPublic" type="checkbox"><span>고객 동의를 받아 완성 작품을 홈페이지 작품 사례로 공개</span></label>
@@ -97,7 +151,7 @@
     </section>
   </div>
 
-  <script src="admin.js?v=6.24" defer></script>
+  <script src="admin.js?v=7.08a" defer></script>
 <script>
 (() => {
   "use strict";
