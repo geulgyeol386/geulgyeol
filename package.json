@@ -1,6 +1,6 @@
 {
   "name": "geulgyeol",
-  "version": "7.0.9",
+  "version": "7.0.10",
   "private": true,
   "description": "글결 서예 주문 및 작품 관리 웹서비스",
   "main": "server.js",
