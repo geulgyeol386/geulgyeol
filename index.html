@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>글결 | 묵향을 담은 손글씨</title>
-  <link rel="stylesheet" href="style.css?v=6.9">
-  <link rel="stylesheet" href="final.css?v=6.17">
+  <link rel="stylesheet" href="style.css?v=8.2">
+  <link rel="stylesheet" href="final.css?v=8.2">
 </head>
 <body>
 
@@ -362,6 +362,26 @@
         </label>
 
         <label>
+          <span>작품 종류 *</span>
+          <select id="workType" required>
+            <option value="">작품 종류를 선택해 주세요</option>
+            <option>가훈</option>
+            <option>청첩장</option>
+            <option>연하장</option>
+            <option>감사표시글</option>
+            <option>행사답례글</option>
+            <option>소품글씨</option>
+            <option>인테리어용글귀</option>
+            <option>액자</option>
+            <option>축하글씨</option>
+            <option>입춘첩</option>
+            <option>인쇄물표지</option>
+            <option>기타</option>
+          </select>
+          <small>가장 가까운 종류를 골라주세요. 정확하지 않아도 상담하며 조정할 수 있습니다.</small>
+        </label>
+
+        <label>
           <span>작품 형태</span>
           <select id="workShape">
             <option>함께 상의</option>
@@ -407,63 +427,89 @@
       <label class="full-field">
         <span>전하고 싶은 마음과 사연 *</span>
         <textarea id="requestStory" required maxlength="500" placeholder="예: 존경하는 학교 선배님이 늦게서야 손주를 보게 되어 축하 선물을 하고 싶습니다. 건강하고 주변 사람들에게 밝은 기운을 주는 아이로 자라기를 바라는 뜻을 담고 싶습니다."></textarea>
-        <small class="story-help">작품의 용도나 종류를 따로 고르지 않아도 됩니다. 누구에게, 어떤 상황에서, 어떤 뜻을 전하고 싶은지 자유롭게 적어주세요. <strong id="storyCount">0 / 500자</strong></small>
+        <small class="story-help">선택한 작품 종류를 바탕으로, 누구에게 어떤 상황에서 어떤 뜻을 전하고 싶은지 자유롭게 적어주세요. <strong id="storyCount">0 / 500자</strong></small>
       </label>
 
-      <label class="full-field preferred-sentence">
-        <span>원하는 문구를 먼저 직접 적어주세요</span>
-        <textarea id="chosenSentence" placeholder="예: 오늘도 봄날처럼 따뜻하고 행복하게"></textarea>
-        <small>문구가 아직 정해지지 않았다면 아래 AI 추천 기능을 선택해도 됩니다.</small>
-      </label>
+      <section class="sentence-method-section" aria-labelledby="sentenceMethodTitle">
+        <div class="sentence-method-head">
+          <h3 id="sentenceMethodTitle">문구는 어떻게 준비하시겠습니까?</h3>
+          <p>직접 준비한 문구를 입력하거나, AI와 함께 새로운 문구를 만들어 보세요.</p>
+        </div>
 
-      <div class="ai-option-box">
-        <label class="ai-toggle">
-          <input id="useAiRecommendation" type="checkbox" onchange="toggleAiRecommendation()">
-          <span>문구 만들기가 어려워 AI의 도움을 받고 싶습니다.</span>
-        </label>
+        <div class="sentence-method-options" role="group" aria-label="문구 작성 방법 선택">
+          <button id="directSentenceButton" type="button" class="sentence-method-button" data-sentence-mode="direct" aria-pressed="false">
+            <strong>✍ 원하는 문구 직접 작성</strong>
+            <span>이미 생각해 둔 문구가 있는 분께 적합합니다.</span>
+          </button>
+          <button id="aiSentenceButton" type="button" class="sentence-method-button" data-sentence-mode="ai" aria-pressed="false">
+            <strong>🤖 AI와 함께 문구 만들기</strong>
+            <span>ChatGPT에 사용되는 AI 기술로 여러 표현을 제안받습니다.</span>
+          </button>
+        </div>
 
-        <div id="aiRecommendationPanel" class="ai-recommendation-panel" hidden>
+        <input id="sentenceMethod" type="hidden" value="">
+        <input id="useAiRecommendation" type="checkbox" hidden>
+
+        <div id="directSentencePanel" class="sentence-method-panel" hidden>
+          <label class="full-field preferred-sentence">
+            <span>원하는 문구를 직접 적어주세요</span>
+            <textarea id="chosenSentence" placeholder="예: 오늘도 봄날처럼 따뜻하고 행복하게"></textarea>
+            <small>입력한 문구는 주문 전 미리보기에서 다시 확인할 수 있습니다.</small>
+          </label>
+        </div>
+
+        <div id="aiRecommendationPanel" class="ai-recommendation-panel sentence-method-panel" hidden>
+          <div class="ai-first-guide">
+            <strong>AI가 처음이셔도 어렵지 않습니다.</strong>
+            <p>전하고 싶은 내용과 분위기를 알려주시면 여러 문구를 제안합니다. 마음에 드는 문구를 고른 뒤 원하는 만큼 다듬어 보세요.</p>
+            <small>AI가 제안한 문구는 바로 주문되지 않습니다. 직접 선택하고 확인한 최종 문구만 작품에 사용됩니다.</small>
+          </div>
+
           <div class="recommend-head">
             <div>
               <h3>AI 맞춤 문구</h3>
-              <p>AI가 사연의 목적을 먼저 판단한 뒤, 가훈·축하글·초대글·감사글 등 상황에 맞는 문구 3개를 제안합니다.</p>
+              <p>사연의 목적을 살펴보고 서로 다른 느낌의 문구 5개를 제안합니다.</p>
             </div>
+          </div>
+
+          <div class="ai-direction-grid">
+            <label>
+              <span>꼭 살리고 싶은 내용</span>
+              <input id="aiEmphasis" type="text" maxlength="100" placeholder="예: 부모님의 희생과 사랑, 건강을 바라는 마음">
+              <small>반드시 포함하거나 강조하고 싶은 단어·뜻을 적어주세요.</small>
+            </label>
+            <label>
+              <span>원하는 문체</span>
+              <select id="aiPreferredStyle">
+                <option value="다양하게">AI가 다양하게 추천</option>
+                <option value="담백하게">담백하게</option>
+                <option value="감성적으로">감성적으로</option>
+                <option value="고풍스럽게">고풍스럽게</option>
+                <option value="힘 있게">힘 있게</option>
+                <option value="현대적으로">현대적으로</option>
+              </select>
+              <small>후보 간 차이를 충분히 느낄 수 있도록 구성합니다.</small>
+            </label>
           </div>
 
           <fieldset class="ai-length-fieldset">
             <legend>원하는 문구 길이를 선택하세요</legend>
             <div class="ai-length-options">
-              <label class="ai-length-option">
-                <input type="radio" name="aiLengthRange" value="short" checked>
-                <span><strong>짧게</strong><small>30자 미만 · 10,000원</small></span>
-              </label>
-              <label class="ai-length-option">
-                <input type="radio" name="aiLengthRange" value="medium">
-                <span><strong>보통</strong><small>30~60자 · 20,000원</small></span>
-              </label>
-              <label class="ai-length-option">
-                <input type="radio" name="aiLengthRange" value="long">
-                <span><strong>길게</strong><small>60~100자 · 30,000원</small></span>
-              </label>
-              <label class="ai-length-option">
-                <input type="radio" name="aiLengthRange" value="veryLong">
-                <span><strong>매우 길게</strong><small>100자 이상 · 50,000원</small></span>
-              </label>
+              <label class="ai-length-option"><input type="radio" name="aiLengthRange" value="short" checked><span><strong>짧게</strong><small>30자 미만 · 10,000원</small></span></label>
+              <label class="ai-length-option"><input type="radio" name="aiLengthRange" value="medium"><span><strong>보통</strong><small>30~60자 · 20,000원</small></span></label>
+              <label class="ai-length-option"><input type="radio" name="aiLengthRange" value="long"><span><strong>길게</strong><small>60~100자 · 30,000원</small></span></label>
+              <label class="ai-length-option"><input type="radio" name="aiLengthRange" value="veryLong"><span><strong>매우 길게</strong><small>100자 이상 · 50,000원</small></span></label>
             </div>
             <p class="ai-length-notice">글자 수는 공백을 제외하여 계산하며, 작품의 크기와 글자 수 중 높은 기준의 금액이 적용됩니다.</p>
           </fieldset>
 
-          <button id="aiGenerateButton" type="button" class="button button-outline ai-generate-button" onclick="makeRequestSentence()">
-            AI 맞춤 문구 만들기
-          </button>
-          <p class="ai-source-notice">이 추천 문구는 <strong>OpenAI의 GPT 기술(ChatGPT에 사용되는 AI 기술)</strong>을 활용해 생성한 내용입니다. 최종 문구는 고객님의 뜻에 맞게 선택·수정해 사용할 수 있습니다.</p>
-          <p class="ai-privacy-notice">AI 추천을 사용할 때에는 이름·연락처·이메일은 전송하지 않고, 입력한 사연·전하는 대상·글씨 분위기·희망 길이만 문구 생성을 위해 AI 서비스에 전달합니다.</p>
-
-          <div id="aiSuggestion" class="ai-suggestion">
-            맞춤 문구가 이곳에 표시됩니다.
-          </div>
+          <button id="aiGenerateButton" type="button" class="button button-outline ai-generate-button" onclick="makeRequestSentence()">AI 문구 5개 받아보기</button>
+          <p id="aiConnectionStatus" class="ai-connection-status" role="status">AI 연결 상태를 확인하고 있습니다…</p>
+          <p class="ai-source-notice">이 기능은 <strong>OpenAI의 GPT 기술(ChatGPT에 사용되는 AI 기술)</strong>을 활용합니다. 결과는 고객님의 뜻에 맞게 선택·수정할 수 있습니다.</p>
+          <p class="ai-privacy-notice">이름·연락처·이메일은 AI에 전송하지 않습니다. 사연·전하는 대상·글씨 분위기·희망 길이와 직접 입력한 강조 내용만 문구 생성을 위해 전달합니다.</p>
+          <div id="aiSuggestion" class="ai-suggestion">맞춤 문구가 이곳에 표시됩니다.</div>
         </div>
-      </div>
+      </section>
 
       <label class="full-field">
         <span>추가로 전하고 싶은 내용</span>

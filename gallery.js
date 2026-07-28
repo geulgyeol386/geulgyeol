@@ -119,40 +119,49 @@ document.addEventListener('DOMContentLoaded', async () => {
   const root = document.getElementById('galleryList');
   const viewer = createGalleryViewer();
   if (!root) return;
+  let rows = [];
+  let activeType = '';
 
-  try {
-    const response = await fetch('/api/gallery', { cache: 'no-store' });
-    if (!response.ok) throw new Error(`gallery api ${response.status}`);
-    const rows = await response.json();
-
-    if (!Array.isArray(rows) || rows.length === 0) {
-      root.innerHTML = '<div class="empty-gallery"><strong>공개된 작품을 준비하고 있습니다.</strong><p>고객의 동의를 받은 작품만 이곳에 소개됩니다.</p></div>';
+  const renderGallery = () => {
+    const visible = activeType ? rows.filter((o) => o.workType === activeType) : rows;
+    if (!visible.length) {
+      root.innerHTML = '<div class="empty-gallery"><strong>해당 종류의 공개 작품을 준비하고 있습니다.</strong><p>고객의 동의를 받은 작품만 이곳에 소개됩니다.</p></div>';
       return;
     }
-
-    root.innerHTML = rows.map((o, i) => `
-      <article class="gallery-card" data-gallery-index="${i}">
+    root.innerHTML = visible.map((o, i) => `
+      <article class="gallery-card ${o.featuredWork ? 'is-featured' : ''}" data-gallery-index="${i}">
         <button type="button" class="gallery-image-button" aria-label="${esc(o.workType || '완성 작품')} 크게 보기">
           <img src="${o.completedImage}" alt="${esc(o.workType || '글결 완성 작품')}">
+          ${o.featuredWork ? '<span class="gallery-featured-badge">대표작</span>' : ''}
           <span class="gallery-zoom-hint">🔍 크게 보기</span>
         </button>
         <div class="gallery-card-info">
           <span>${esc(o.workType || '완성 작품')}</span>
-          <h2>${esc(o.sentence || '마음을 담은 글씨')}</h2>
+          <h2>${esc(o.archiveTitle || o.sentence || '마음을 담은 글씨')}</h2>
           <p>${esc(o.completedDate || '')}</p>
           <button type="button" class="gallery-open-button">작품 크게 보기</button>
         </div>
       </article>`).join('');
-
     root.querySelectorAll('.gallery-card').forEach((card) => {
-      const row = rows[Number(card.dataset.galleryIndex)];
-      const open = () => {
-        if (!row?.completedImage) return;
-        viewer.openWork({ src: row.completedImage, workType: row.workType, sentence: row.sentence });
-      };
+      const row = visible[Number(card.dataset.galleryIndex)];
+      const open = () => row?.completedImage && viewer.openWork({ src: row.completedImage, workType: row.workType, sentence: row.archiveTitle || row.sentence });
       card.querySelector('.gallery-image-button')?.addEventListener('click', open);
       card.querySelector('.gallery-open-button')?.addEventListener('click', open);
     });
+  };
+
+  document.querySelectorAll('[data-gallery-filter]').forEach((button) => button.addEventListener('click', () => {
+    activeType = button.dataset.galleryFilter || '';
+    document.querySelectorAll('[data-gallery-filter]').forEach((x) => x.classList.toggle('is-active', x === button));
+    renderGallery();
+  }));
+
+  try {
+    const response = await fetch('/api/gallery', { cache: 'no-store' });
+    if (!response.ok) throw new Error(`gallery api ${response.status}`);
+    rows = await response.json();
+    if (!Array.isArray(rows)) rows = [];
+    renderGallery();
   } catch (error) {
     console.error(error);
     root.innerHTML = '<div class="empty-gallery"><strong>작품을 불러오지 못했습니다.</strong><p>잠시 후 다시 시도해 주세요.</p></div>';

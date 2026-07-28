@@ -98,6 +98,11 @@ async function migrateLegacyRequests() {
 
 let currentAiSuggestion = "";
 let currentAiWorkType = "";
+let currentAiRefineText = "";
+let aiGenerationCount = 0;
+let aiRefinementCount = 0;
+let aiSelectedCandidate = 0;
+let aiLastRefinement = "";
 let referenceImageData1 = "";
 let referenceImageData2 = "";
 
@@ -129,9 +134,52 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  const refineClose = document.getElementById("aiRefineClose");
+  if (refineClose) refineClose.addEventListener("click", closeAiRefinePanel);
+
+  const refineButton = document.getElementById("aiRefineButton");
+  if (refineButton) refineButton.addEventListener("click", function () { refineAiSuggestion(); });
+
+  document.querySelectorAll("[data-refine]").forEach(function (button) {
+    button.addEventListener("click", function () {
+      const input = document.getElementById("aiRefineInstruction");
+      if (input) input.value = button.getAttribute("data-refine") || "";
+      refineAiSuggestion(button.getAttribute("data-refine") || "");
+    });
+  });
+
+  document.querySelectorAll("[data-sentence-mode]").forEach(function (button) {
+    button.addEventListener("click", function () {
+      setSentenceMode(button.getAttribute("data-sentence-mode") || "");
+    });
+  });
+
+  checkAiConnection();
   setupRevealAnimation();
   migrateLegacyRequests().then(renderSavedRequests);
 });
+
+
+async function checkAiConnection() {
+  const notice = document.getElementById("aiConnectionStatus");
+  const button = document.getElementById("aiGenerateButton");
+  if (!notice) return;
+  try {
+    const response = await fetch("/api/ai/status", { cache: "no-store" });
+    const result = await response.json();
+    if (result.configured) {
+      notice.textContent = "AI 연결 준비가 완료되었습니다.";
+      notice.className = "ai-connection-status is-ready";
+    } else {
+      notice.textContent = "AI 연결 전입니다. Railway Variables에 OPENAI_API_KEY를 등록하면 바로 사용할 수 있습니다.";
+      notice.className = "ai-connection-status is-waiting";
+      if (button) button.title = "OPENAI_API_KEY 등록 후 사용할 수 있습니다.";
+    }
+  } catch {
+    notice.textContent = "AI 연결 상태는 실제 업로드 후 확인됩니다.";
+    notice.className = "ai-connection-status is-waiting";
+  }
+}
 
 function showMessage(text, type) {
   const message = document.getElementById("formMessage");
@@ -145,22 +193,36 @@ function showMessage(text, type) {
   message.className = "form-message " + (type || "");
 }
 
+function setSentenceMode(mode) {
+  const method = document.getElementById("sentenceMethod");
+  const directPanel = document.getElementById("directSentencePanel");
+  const aiPanel = document.getElementById("aiRecommendationPanel");
+  const aiCheckbox = document.getElementById("useAiRecommendation");
+
+  if (method) method.value = mode;
+  if (directPanel) directPanel.hidden = mode !== "direct";
+  if (aiPanel) aiPanel.hidden = mode !== "ai";
+  if (aiCheckbox) aiCheckbox.checked = mode === "ai";
+
+  document.querySelectorAll("[data-sentence-mode]").forEach(function (button) {
+    const active = button.getAttribute("data-sentence-mode") === mode;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", active ? "true" : "false");
+  });
+
+  if (mode === "direct") {
+    currentAiSuggestion = "";
+    const chosen = document.getElementById("chosenSentence");
+    if (chosen) chosen.focus();
+  } else if (mode === "ai") {
+    const emphasis = document.getElementById("aiEmphasis");
+    if (emphasis) emphasis.focus();
+  }
+}
+
 function toggleAiRecommendation() {
   const checkbox = document.getElementById("useAiRecommendation");
-  const panel = document.getElementById("aiRecommendationPanel");
-
-  if (!checkbox || !panel) return;
-
-  panel.hidden = !checkbox.checked;
-
-  if (!checkbox.checked) {
-    currentAiSuggestion = "";
-
-    const suggestion = document.getElementById("aiSuggestion");
-    if (suggestion) {
-      suggestion.textContent = "맞춤 문구가 이곳에 표시됩니다.";
-    }
-  }
+  setSentenceMode(checkbox && checkbox.checked ? "ai" : "direct");
 }
 
 function countSentenceCharacters(text) {
@@ -201,85 +263,117 @@ function inferWorkTypeFromStory(story) {
   return "기타";
 }
 
-async function makeRequestSentence() {
+function getAiRequestContext() {
   const storyElement = document.getElementById("requestStory");
-  const recipientElement = document.getElementById("recipient");
-  const moodElement = document.getElementById("writingMood");
+  return {
+    storyElement,
+    story: storyElement ? storyElement.value.trim() : "",
+    recipient: getValue("recipient"),
+    writingMood: getValue("writingMood") || "함께 상의",
+    workType: getValue("workType"),
+    range: getSelectedAiLengthRange(),
+    emphasis: getValue("aiEmphasis"),
+    preferredStyle: getValue("aiPreferredStyle") || "다양하게"
+  };
+}
+
+async function requestAiSuggestions(payload, loadingText) {
+  const suggestionBox = document.getElementById("aiSuggestion");
+  if (!suggestionBox) throw new Error("AI 결과 영역을 찾을 수 없습니다.");
+  suggestionBox.innerHTML = `<div class="ai-loading">${escapeHtml(loadingText)}</div>`;
+
+  const response = await fetch("/api/ai/suggestions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  const result = await response.json().catch(function () { return {}; });
+  if (!response.ok) throw new Error(result.error || "AI 문구를 만들지 못했습니다.");
+  return result;
+}
+
+function renderAiSuggestions(result, mode) {
+  const suggestionBox = document.getElementById("aiSuggestion");
+  const setting = getAiLengthSetting(getSelectedAiLengthRange());
+  const suggestions = Array.isArray(result.suggestions) ? result.suggestions : [];
+  if (!suggestionBox || suggestions.length === 0) throw new Error("AI가 추천 문구를 반환하지 않았습니다.");
+
+  currentAiWorkType = getValue("workType") || result.workType || inferWorkTypeFromStory(getValue("requestStory"));
+  window.generatedAiSuggestions = suggestions;
+
+  const purpose = result.purposeSummary
+    ? `<p class="ai-purpose-summary">AI 판단: <strong>${escapeHtml(currentAiWorkType)}</strong> · ${escapeHtml(result.purposeSummary)}</p>`
+    : `<p class="ai-purpose-summary">AI 판단 작품 유형: <strong>${escapeHtml(currentAiWorkType)}</strong></p>`;
+  const heading = mode === "refine"
+    ? '<div class="ai-result-heading"><strong>선택한 뜻을 살린 수정안 3개</strong><span>마음에 드는 문구를 다시 다듬어도 됩니다.</span></div>'
+    : '<div class="ai-result-heading"><strong>서로 다른 방향의 추천 문구 5개</strong><span>각 문구는 선택하거나 다시 다듬을 수 있습니다.</span></div>';
+
+  suggestionBox.innerHTML = purpose + heading + suggestions.map(function (item, index) {
+    const sentence = typeof item === "string" ? item : (item.text || "");
+    const label = typeof item === "object" && item.label ? item.label : `추천 ${index + 1}`;
+    const count = countSentenceCharacters(sentence);
+    const isInRange = count >= setting.min && count <= setting.max;
+    return `
+      <div class="ai-suggestion-card">
+        <div class="ai-suggestion-number">${index + 1}</div>
+        <div class="ai-suggestion-content">
+          <strong class="ai-suggestion-label">${escapeHtml(label)}</strong>
+          <p>${escapeHtml(sentence)}</p>
+          <small class="${isInRange ? "range-ok" : "range-note"}">공백 제외 ${count}자 · 희망 ${setting.label} · 기본비용 ${setting.price}</small>
+        </div>
+        <div class="ai-card-actions">
+          <button type="button" data-ai-use="${index}">이 문구 사용</button>
+          <button type="button" class="secondary" data-ai-refine="${index}">이 문구 다듬기</button>
+        </div>
+      </div>`;
+  }).join("") + (mode === "initial" ? '<button id="aiGenerateAgain" type="button" class="ai-generate-again">새로운 문구 5개 다시 만들기</button>' : '');
+
+  suggestionBox.querySelectorAll("[data-ai-use]").forEach(function (button) {
+    button.addEventListener("click", function () { useAiSuggestion(Number(button.getAttribute("data-ai-use"))); });
+  });
+  suggestionBox.querySelectorAll("[data-ai-refine]").forEach(function (button) {
+    button.addEventListener("click", function () { openAiRefinePanel(Number(button.getAttribute("data-ai-refine"))); });
+  });
+  const again = document.getElementById("aiGenerateAgain");
+  if (again) again.addEventListener("click", makeRequestSentence);
+}
+
+async function makeRequestSentence() {
   const suggestionBox = document.getElementById("aiSuggestion");
   const checkbox = document.getElementById("useAiRecommendation");
   const panel = document.getElementById("aiRecommendationPanel");
   const button = document.getElementById("aiGenerateButton");
+  const context = getAiRequestContext();
 
-  if (!storyElement || !suggestionBox) {
+  if (!context.storyElement || !suggestionBox) {
     showMessage("페이지 연결에 문제가 있습니다. 새 파일로 교체한 뒤 다시 실행해 주세요.", "error");
     return;
   }
-
   if (checkbox && !checkbox.checked) checkbox.checked = true;
   if (panel) panel.hidden = false;
-
-  const story = storyElement.value.trim();
-  const recipient = recipientElement ? recipientElement.value.trim() : "";
-  const writingMood = moodElement ? moodElement.value.trim() : "함께 상의";
-
-  if (!story) {
+  if (!context.story) {
     showMessage("먼저 ‘전하고 싶은 마음과 사연’을 적어주세요.", "error");
-    storyElement.focus();
+    context.storyElement.focus();
     return;
   }
 
-  const range = getSelectedAiLengthRange();
-  const setting = getAiLengthSetting(range);
   currentAiSuggestion = "";
   currentAiWorkType = "";
-  suggestionBox.innerHTML = '<div class="ai-loading">AI가 사연의 뜻과 용도를 살펴보고 있습니다…</div>';
-  if (button) { button.disabled = true; button.textContent = "AI가 문구를 만들고 있습니다…"; }
+  aiSelectedCandidate = 0;
+  closeAiRefinePanel();
+  if (button) { button.disabled = true; button.textContent = "AI가 5개 문구를 만들고 있습니다…"; }
 
   try {
-    const response = await fetch("/api/ai/suggestions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ story, recipient, writingMood, range })
-    });
-
-    const result = await response.json().catch(function () { return {}; });
-    if (!response.ok) {
-      throw new Error(result.error || "AI 문구를 만들지 못했습니다.");
-    }
-
-    const suggestions = Array.isArray(result.suggestions) ? result.suggestions.slice(0, 3) : [];
-    if (suggestions.length === 0) throw new Error("AI가 추천 문구를 반환하지 않았습니다.");
-
-    currentAiWorkType = result.workType || inferWorkTypeFromStory(story);
-    window.generatedAiSuggestions = suggestions;
-
-    const purpose = result.purposeSummary ? `<p class="ai-purpose-summary">AI 판단: <strong>${escapeHtml(currentAiWorkType)}</strong> · ${escapeHtml(result.purposeSummary)}</p>` : `<p class="ai-purpose-summary">AI 판단 작품 유형: <strong>${escapeHtml(currentAiWorkType)}</strong></p>`;
-
-    suggestionBox.innerHTML = purpose + suggestions.map(function (item, index) {
-      const sentence = typeof item === "string" ? item : (item.text || "");
-      const label = typeof item === "object" && item.label ? item.label : ["간결한 작품형", "품격 있는 문장형", "함축적인 표현"][index];
-      const count = countSentenceCharacters(sentence);
-      const isInRange = count >= setting.min && count <= setting.max;
-      return `
-        <div class="ai-suggestion-card">
-          <div class="ai-suggestion-number">${index + 1}</div>
-          <div class="ai-suggestion-content">
-            <strong class="ai-suggestion-label">${escapeHtml(label)}</strong>
-            <p>${escapeHtml(sentence)}</p>
-            <small class="${isInRange ? "range-ok" : "range-note"}">공백 제외 ${count}자 · 희망 ${setting.label} · 기본비용 ${setting.price}</small>
-          </div>
-          <button type="button" onclick="useAiSuggestion(${index})">이 문구 사용하기</button>
-        </div>
-      `;
-    }).join("");
-
-    showMessage("AI가 사연의 목적을 판단해 맞춤 문구 3개를 제안했습니다.", "success");
+    const result = await requestAiSuggestions({ mode: "initial", ...context }, "AI가 사연의 뜻과 강조할 핵심을 살펴보고 있습니다…");
+    aiGenerationCount += 1;
+    renderAiSuggestions(result, "initial");
+    showMessage("서로 다른 방향의 맞춤 문구 5개를 만들었습니다. 문구를 선택하거나 더 다듬어 보세요.", "success");
   } catch (error) {
     console.error(error);
     suggestionBox.innerHTML = `<div class="ai-error">${escapeHtml(error.message || "AI 문구 추천 중 오류가 발생했습니다.")}</div>`;
     showMessage(error.message || "AI 문구 추천 중 오류가 발생했습니다.", "error");
   } finally {
-    if (button) { button.disabled = false; button.textContent = "AI 맞춤 문구 만들기"; }
+    if (button) { button.disabled = false; button.textContent = "서로 다른 문구 5개 만들기"; }
   }
 }
 
@@ -288,18 +382,62 @@ function useAiSuggestion(index) {
   const suggestions = window.generatedAiSuggestions || [];
   const selectedItem = suggestions[index];
   const selected = typeof selectedItem === "string" ? selectedItem : (selectedItem && selectedItem.text);
-
   if (!selected) {
-    showMessage("먼저 ‘AI 참고 문구 만들기’를 눌러주세요.", "error");
+    showMessage("먼저 AI 맞춤 문구를 만들어 주세요.", "error");
     return;
   }
-
   if (!chosenSentence) return;
   currentAiSuggestion = selected;
+  aiSelectedCandidate = index + 1;
   chosenSentence.value = selected;
   chosenSentence.dispatchEvent(new Event("input"));
   chosenSentence.focus();
-  showMessage("선택한 문구를 입력란에 넣었습니다. 원하는 표현으로 자유롭게 고쳐주세요.", "success");
+  showMessage("선택한 문구를 입력란에 넣었습니다. 그대로 사용하거나 자유롭게 고쳐주세요.", "success");
+}
+
+function openAiRefinePanel(index) {
+  const suggestions = window.generatedAiSuggestions || [];
+  const item = suggestions[index];
+  const text = typeof item === "string" ? item : (item && item.text);
+  const panel = document.getElementById("aiRefinePanel");
+  const base = document.getElementById("aiRefineBase");
+  if (!text || !panel || !base) return;
+  currentAiRefineText = text;
+  base.textContent = `“${text}”`;
+  panel.hidden = false;
+  panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  const input = document.getElementById("aiRefineInstruction");
+  if (input) input.focus();
+}
+
+function closeAiRefinePanel() {
+  const panel = document.getElementById("aiRefinePanel");
+  if (panel) panel.hidden = true;
+}
+
+async function refineAiSuggestion(preset) {
+  const context = getAiRequestContext();
+  const instructionInput = document.getElementById("aiRefineInstruction");
+  const button = document.getElementById("aiRefineButton");
+  const instruction = String(preset || (instructionInput ? instructionInput.value : "")).trim() || "핵심 뜻을 유지하면서 더 자연스럽고 작품성 있게";
+  if (!currentAiRefineText) {
+    showMessage("먼저 추천 문구에서 ‘이 문구 다듬기’를 선택해 주세요.", "error");
+    return;
+  }
+  if (button) { button.disabled = true; button.textContent = "수정안을 만드는 중…"; }
+  try {
+    const result = await requestAiSuggestions({ mode: "refine", ...context, selectedText: currentAiRefineText, refinement: instruction }, "선택한 문구의 뜻을 유지하며 수정안을 만들고 있습니다…");
+    aiRefinementCount += 1;
+    aiLastRefinement = instruction;
+    renderAiSuggestions(result, "refine");
+    closeAiRefinePanel();
+    showMessage("선택한 문구를 바탕으로 수정안 3개를 만들었습니다. 다시 다듬기도 가능합니다.", "success");
+  } catch (error) {
+    console.error(error);
+    showMessage(error.message || "문구를 다듬는 중 오류가 발생했습니다.", "error");
+  } finally {
+    if (button) { button.disabled = false; button.textContent = "수정안 3개 만들기"; }
+  }
 }
 
 function previewReferenceImage(number, input) {
@@ -414,7 +552,7 @@ function getFormData() {
     name: getValue("customerName"),
     phone: getValue("customerPhone"),
     email: getValue("customerEmail"),
-    workType: currentAiWorkType || inferWorkTypeFromStory(getValue("requestStory")),
+    workType: getValue("workType") || currentAiWorkType || inferWorkTypeFromStory(getValue("requestStory")),
     workShape: getValue("workShape"),
     workSize: getValue("workSize"),
     writingMood: getValue("writingMood"),
@@ -422,8 +560,15 @@ function getFormData() {
     recipient: getValue("recipient"),
     story: getValue("requestStory"),
     sentence: getValue("chosenSentence"),
+    sentenceMethod: getValue("sentenceMethod") || "direct",
     usedAi: checkbox ? checkbox.checked : false,
     aiLengthRange: getSelectedAiLengthRange(),
+    aiPreferredStyle: getValue("aiPreferredStyle"),
+    aiEmphasis: getValue("aiEmphasis"),
+    aiGenerationCount: aiGenerationCount,
+    aiRefinementCount: aiRefinementCount,
+    aiSelectedCandidate: aiSelectedCandidate,
+    aiLastRefinement: aiLastRefinement,
     sentenceCharacterCount: countSentenceCharacters(getValue("chosenSentence")),
     extra: getValue("extraRequest"),
     referenceImage1: referenceImageData1 || "",
@@ -443,6 +588,7 @@ function validateRequest() {
   const requiredFields = [
     { id: "customerName", label: "성함" },
     { id: "customerPhone", label: "연락처" },
+    { id: "workType", label: "작품 종류" },
     { id: "requestStory", label: "전하고 싶은 마음과 사연" }
   ];
 
@@ -458,6 +604,23 @@ function validateRequest() {
 
       return false;
     }
+  }
+
+  const sentenceMethod = getValue("sentenceMethod");
+  const chosenSentence = getValue("chosenSentence");
+
+  if (!sentenceMethod) {
+    showMessage("문구 작성 방법을 먼저 선택해 주세요.", "error");
+    const firstButton = document.getElementById("directSentenceButton");
+    if (firstButton) firstButton.focus();
+    return false;
+  }
+
+  if (!chosenSentence) {
+    showMessage(sentenceMethod === "ai" ? "AI 추천 문구 중 최종 문구를 선택해 주세요." : "원하는 문구를 입력해 주세요.", "error");
+    const target = sentenceMethod === "ai" ? document.getElementById("aiGenerateButton") : document.getElementById("chosenSentence");
+    if (target) target.focus();
+    return false;
   }
 
   if (consent && !consent.checked) {
@@ -549,7 +712,7 @@ function showRequestPreview(data, shouldScroll) {
         ${printInfo("희망 크기", data.workSize || "함께 상의")}
         ${printInfo("글씨 분위기", data.writingMood || "함께 상의")}
         ${printInfo("희망 완료일", data.dueDate || "함께 상의")}
-        ${printInfo("AI 도움 사용", data.usedAi ? "사용함" : "사용하지 않음")}
+        ${printInfo("문구 작성 방식", data.usedAi ? "AI와 함께 작성" : "직접 작성")}
         ${printInfo("최종 문구 글자 수", (data.sentenceCharacterCount || countSentenceCharacters(data.sentence)) + "자 (공백 제외)")}
         ${printInfo("기본 제작비", getBasePrice(data.workSize, data.sentence))}
       </div>

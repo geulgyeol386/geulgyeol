@@ -143,6 +143,14 @@ function createStorage(options = {}) {
     }
   }
 
+
+  async function getOrder(storageId) {
+    const id = Number(storageId);
+    if (!usePostgres) return readJsonOrders().find(o => Number(o.storageId) === id) || null;
+    const result = await pool.query('SELECT storage_id, order_number, payload FROM orders WHERE storage_id=$1 LIMIT 1', [id]);
+    return result.rows.length ? normalizeDbRow(result.rows[0]) : null;
+  }
+
   async function findCustomerOrder(orderNumber, last4) {
     const normalized = String(orderNumber || '').trim().toLowerCase();
     const phoneTail = String(last4 || '').replace(/\D/g, '');
@@ -244,6 +252,7 @@ function createStorage(options = {}) {
     dataFile,
     init,
     listOrders,
+    getOrder,
     createOrder,
     findCustomerOrder,
     updateOrder,

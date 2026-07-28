@@ -1,0 +1,17 @@
+글결 Railway 환경변수 백업 양식
+※ 실제 값을 적은 파일은 외부에 공유하지 말고 안전한 개인 저장장치에 보관하세요.
+
+ADMIN_USER=
+ADMIN_PASSWORD=
+OPENAI_API_KEY=
+OPENAI_MODEL=gpt-5.6-luna
+DATABASE_URL=
+PUBLIC_BASE_URL=https://www.ai-seoye.com
+ORDER_NOTIFICATION_WEBHOOK_URL=
+ORDER_NOTIFICATION_WEBHOOK_SECRET=
+
+[Railway 정보]
+프로젝트 이름=
+서비스 이름=
+운영 도메인=https://www.ai-seoye.com
+백업 날짜=

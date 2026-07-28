@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>글결 관리자 | 주문·작품 관리</title>
-  <link rel="stylesheet" href="admin.css?v=7.10b">
+  <link rel="stylesheet" href="admin.css?v=8.0">
 </head>
 <body>
   <div id="adminLogin" class="admin-login" hidden>
@@ -21,18 +21,47 @@
   </div>
   <header class="admin-header">
     <div>
-      <p class="eyebrow">GEULGYEOL ADMIN <span class="version-badge">Ver7.10B</span></p>
+      <p class="eyebrow">GEULGYEOL ADMIN <span class="version-badge">Ver8.0</span></p>
       <h1>주문·작품 관리</h1>
     </div>
     <div class="admin-header-actions">
-      <button id="ordersViewButton" type="button" class="header-tab is-active">주문 관리</button>
+      <button id="overviewViewButton" type="button" class="header-tab is-active">운영 대시보드</button>
+      <button id="ordersViewButton" type="button" class="header-tab">주문 관리</button>
+      <button id="archiveViewButton" type="button" class="header-tab">작품 아카이브</button>
       <button id="settlementViewButton" type="button" class="header-tab">월별 결산</button>
       <a class="home-link" href="index.html">홈페이지로 돌아가기</a>
     </div>
   </header>
 
   <main class="admin-main">
-    <div id="ordersView">
+    <section id="overviewView" class="overview-view">
+      <div class="overview-heading">
+        <div><p class="eyebrow">TODAY AT A GLANCE</p><h2>운영 대시보드</h2><p>오늘 확인할 주문과 이번 달 운영 현황을 한 화면에서 봅니다.</p></div>
+        <div class="overview-updated"><span>마지막 갱신</span><strong id="overviewUpdatedAt">-</strong><button id="overviewRefreshButton" type="button">새로고침</button></div>
+      </div>
+      <section class="overview-kpis">
+        <article class="kpi-primary"><span>오늘 새 주문</span><strong id="overviewTodayOrders">0건</strong><small id="overviewTodayHint">오늘 접수된 주문</small></article>
+        <article><span>처리 대기</span><strong id="overviewPending">0건</strong><small>신규 접수·상담 중</small></article>
+        <article><span>제작 진행</span><strong id="overviewMaking">0건</strong><small>입금 완료·제작 중</small></article>
+        <article><span>이번 달 수입</span><strong id="overviewMonthRevenue">0원</strong><small id="overviewMonthLabel">이번 달 실제 수입</small></article>
+      </section>
+      <div class="overview-grid">
+        <section class="overview-card">
+          <div class="overview-card-head"><div><p class="eyebrow">ACTION NEEDED</p><h3>지금 확인할 주문</h3></div><button id="overviewOpenOrders" type="button">전체 주문 보기</button></div>
+          <div id="overviewAttentionList" class="attention-list"></div>
+        </section>
+        <section class="overview-card">
+          <div class="overview-card-head"><div><p class="eyebrow">RECENT ORDERS</p><h3>최근 주문</h3></div></div>
+          <div id="overviewRecentList" class="recent-order-list"></div>
+        </section>
+      </div>
+      <section class="overview-card overview-status-card">
+        <div class="overview-card-head"><div><p class="eyebrow">WORKFLOW</p><h3>작업 단계별 현황</h3></div><span id="overviewTotalOrders">전체 0건</span></div>
+        <div id="overviewStatusBars" class="status-bars"></div>
+      </section>
+    </section>
+
+    <div id="ordersView" hidden>
     <section class="dashboard" aria-label="주문 현황">
       <article><span>전체 주문</span><strong id="countAll">0</strong></article>
       <article><span>신규 접수</span><strong id="countNew">0</strong></article>
@@ -48,6 +77,15 @@
         <input id="searchInput" type="search" placeholder="고객명, 연락처, 작품종류, 주문번호">
       </label>
       <label>
+        <span>작품 종류</span>
+        <select id="workTypeFilter">
+          <option value="">전체 종류</option>
+          <option>가훈</option><option>청첩장</option><option>연하장</option><option>감사표시글</option>
+          <option>행사답례글</option><option>소품글씨</option><option>인테리어용글귀</option><option>액자</option>
+          <option>축하글씨</option><option>입춘첩</option><option>인쇄물표지</option><option>기타</option>
+        </select>
+      </label>
+      <label>
         <span>진행 상태</span>
         <select id="statusFilter">
           <option value="">전체 상태</option>
@@ -59,7 +97,7 @@
         <span>입금 여부</span>
         <select id="paymentFilter"><option value="">전체</option><option value="미입금">미입금</option><option value="입금 완료">입금 완료</option></select>
       </label>
-      <button id="backupButton" type="button">자료 백업</button>
+      <button id="backupButton" type="button">전체 백업</button>
       <label class="restore-label">자료 복원<input id="restoreInput" type="file" accept="application/json"></label>
     </section>
 
@@ -73,6 +111,24 @@
       <div id="orderList" class="order-list"></div>
     </section>
     </div>
+
+
+    <section id="archiveView" class="archive-view" hidden>
+      <div class="archive-heading">
+        <div><p class="eyebrow">WORK ARCHIVE</p><h2>작품 아카이브</h2><p>완성 사진이 등록된 작품을 한눈에 보고, 홈페이지 공개 여부와 대표작을 관리합니다.</p></div>
+        <a class="archive-public-link" href="gallery.html" target="_blank" rel="noopener">고객용 작품 갤러리 보기</a>
+      </div>
+      <section class="archive-dashboard">
+        <article><span>완성 사진 등록</span><strong id="archiveCountAll">0</strong></article>
+        <article><span>홈페이지 공개</span><strong id="archiveCountPublic">0</strong></article>
+        <article><span>대표작</span><strong id="archiveCountFeatured">0</strong></article>
+      </section>
+      <section class="archive-toolbar">
+        <label><span>작품 종류</span><select id="archiveTypeFilter"><option value="">전체 종류</option><option>가훈</option><option>청첩장</option><option>연하장</option><option>감사표시글</option><option>행사답례글</option><option>소품글씨</option><option>인테리어용글귀</option><option>액자</option><option>축하글씨</option><option>입춘첩</option><option>인쇄물표지</option><option>기타</option></select></label>
+        <label><span>공개 상태</span><select id="archivePublicFilter"><option value="">전체</option><option value="public">공개 중</option><option value="private">비공개</option><option value="featured">대표작</option></select></label>
+      </section>
+      <div id="archiveList" class="archive-list"></div>
+    </section>
 
     <section id="settlementView" class="settlement-view" hidden>
       <div class="settlement-heading">
@@ -132,6 +188,7 @@
         <div id="customerSummary" class="customer-summary"></div>
 
         <div class="form-grid">
+          <label><span>작품 종류</span><select id="adminWorkType"><option>가훈</option><option>청첩장</option><option>연하장</option><option>감사표시글</option><option>행사답례글</option><option>소품글씨</option><option>인테리어용글귀</option><option>액자</option><option>축하글씨</option><option>입춘첩</option><option>인쇄물표지</option><option>기타</option></select></label>
           <label><span>진행 상태</span><select id="adminStatus"><option>신규 접수</option><option>상담 중</option><option>입금 완료</option><option>제작 중</option><option>제작 완료</option><option>발송 완료</option><option>취소·미진행</option></select></label>
           <label><span>입금 여부</span><select id="adminPayment"><option>미입금</option><option>입금 완료</option></select></label>
           <label><span>기본비용</span><input id="adminBasePrice" type="number" min="0" step="1000"></label>
@@ -140,11 +197,14 @@
           <label><span>제작 완료일</span><input id="adminCompletedDate" type="date"></label>
           <label class="full"><span>택배 송장번호</span><input id="adminTrackingNumber" type="text"></label>
           <label class="full"><span>고객 후기</span><textarea id="adminReview" rows="3"></textarea></label>
-          <label class="full"><span>관리자 메모</span><textarea id="adminMemo" rows="4"></textarea></label>
+          <label class="full"><span>관리자 메모</span><textarea id="adminMemo" rows="4" placeholder="고객에게 보이지 않는 내부 메모입니다."></textarea></label>
+          <section class="full history-panel"><div class="history-title"><span>작업 진행 이력</span><small>상태·입금·사진·송장 변경이 자동 기록됩니다.</small></div><div id="progressHistory" class="history-list"></div></section>
           <label class="full"><span>취소·미진행 사유</span><textarea id="adminCancelReason" rows="2" placeholder="예: 상담 후 고객 사정으로 미진행, 가격 부담, 일정 불일치 등"></textarea></label>
           <label class="check-field full"><input id="adminCustomerVisible" type="checkbox"><span>고객 주문 확인 페이지에 진행 상황과 완성 작품 공개</span></label>
           <label class="full"><span>고객에게 전할 안내 메시지</span><textarea id="adminCustomerMessage" rows="3" placeholder="예: 작품이 완성되었습니다. 확인 후 연락 부탁드립니다."></textarea></label>
+          <label class="full"><span>작품 아카이브 제목</span><input id="adminArchiveTitle" type="text" maxlength="120" placeholder="비워두면 최종 문구가 제목으로 표시됩니다."></label>
           <label class="check-field full"><input id="adminPublic" type="checkbox"><span>고객 동의를 받아 완성 작품을 홈페이지 작품 사례로 공개</span></label>
+          <label class="check-field full"><input id="adminFeatured" type="checkbox"><span>대표작으로 지정하여 갤러리 앞부분에 표시</span></label>
         </div>
 
         <section class="image-section">
@@ -163,7 +223,7 @@
     </section>
   </div>
 
-  <script src="admin.js?v=7.08a" defer></script>
+  <script src="admin.js?v=8.2" defer></script>
 <script>
 (() => {
   "use strict";
