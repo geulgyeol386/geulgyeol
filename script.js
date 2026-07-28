@@ -390,9 +390,16 @@ function useAiSuggestion(index) {
   currentAiSuggestion = selected;
   aiSelectedCandidate = index + 1;
   chosenSentence.value = selected;
-  chosenSentence.dispatchEvent(new Event("input"));
+  chosenSentence.dispatchEvent(new Event("input", { bubbles: true }));
+
+  const directPanel = document.getElementById("directSentencePanel");
+  if (directPanel) directPanel.hidden = false;
+  const directLabel = directPanel ? directPanel.querySelector(".preferred-sentence > span") : null;
+  if (directLabel) directLabel.textContent = "최종 사용할 문구";
+
   chosenSentence.focus();
-  showMessage("선택한 문구를 입력란에 넣었습니다. 그대로 사용하거나 자유롭게 고쳐주세요.", "success");
+  chosenSentence.scrollIntoView({ behavior: "smooth", block: "center" });
+  showMessage("선택한 문구를 최종 문구 입력란에 넣었습니다. 그대로 사용하거나 자유롭게 고쳐주세요.", "success");
 }
 
 function openAiRefinePanel(index) {

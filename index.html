@@ -508,6 +508,26 @@
           <p class="ai-source-notice">이 기능은 <strong>OpenAI의 GPT 기술(ChatGPT에 사용되는 AI 기술)</strong>을 활용합니다. 결과는 고객님의 뜻에 맞게 선택·수정할 수 있습니다.</p>
           <p class="ai-privacy-notice">이름·연락처·이메일은 AI에 전송하지 않습니다. 사연·전하는 대상·글씨 분위기·희망 길이와 직접 입력한 강조 내용만 문구 생성을 위해 전달합니다.</p>
           <div id="aiSuggestion" class="ai-suggestion">맞춤 문구가 이곳에 표시됩니다.</div>
+
+          <section id="aiRefinePanel" class="ai-refine-panel" hidden aria-live="polite">
+            <div class="ai-refine-head">
+              <div>
+                <strong>이 문구를 어떻게 다듬을까요?</strong>
+                <p id="aiRefineBase" class="ai-refine-base"></p>
+              </div>
+              <button type="button" class="ai-text-button" onclick="closeAiRefinePanel()">닫기</button>
+            </div>
+            <div class="ai-refine-presets" aria-label="빠른 다듬기 선택">
+              <button type="button" onclick="refineAiSuggestion('더 짧고 간결하게')">더 짧게</button>
+              <button type="button" onclick="refineAiSuggestion('더 따뜻하고 감동적으로')">더 따뜻하게</button>
+              <button type="button" onclick="refineAiSuggestion('더 고풍스럽고 품격 있게')">더 고풍스럽게</button>
+              <button type="button" onclick="refineAiSuggestion('더 자연스럽고 현대적으로')">더 자연스럽게</button>
+            </div>
+            <div class="ai-refine-custom">
+              <input id="aiRefineInstruction" type="text" maxlength="120" placeholder="예: 부모님의 건강을 바라는 뜻을 더 강조해 주세요">
+              <button id="aiRefineButton" type="button" onclick="refineAiSuggestion()">수정안 3개 만들기</button>
+            </div>
+          </section>
         </div>
       </section>
 
@@ -605,7 +625,7 @@
   <p id="modalCaption"></p>
 </div>
 
-<script src="script.js?v=6.23" defer></script>
+<script src="script.js?v=8.2.1" defer></script>
 <script>
 (() => {
   "use strict";
