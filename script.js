@@ -181,6 +181,33 @@ async function checkAiConnection() {
   }
 }
 
+
+function moveToResult(target, options) {
+  const element = typeof target === "string" ? document.getElementById(target) : target;
+  if (!element) return;
+
+  const settings = options || {};
+  const delay = Number.isFinite(settings.delay) ? settings.delay : 80;
+  window.setTimeout(function () {
+    const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    element.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: settings.block || "start"
+    });
+
+    if (settings.focus) {
+      const focusTarget = typeof settings.focus === "string"
+        ? document.getElementById(settings.focus)
+        : settings.focus;
+      if (focusTarget && typeof focusTarget.focus === "function") {
+        window.setTimeout(function () {
+          focusTarget.focus({ preventScroll: true });
+        }, reduceMotion ? 0 : 350);
+      }
+    }
+  }, delay);
+}
+
 function showMessage(text, type) {
   const message = document.getElementById("formMessage");
 
@@ -213,10 +240,10 @@ function setSentenceMode(mode) {
   if (mode === "direct") {
     currentAiSuggestion = "";
     const chosen = document.getElementById("chosenSentence");
-    if (chosen) chosen.focus();
+    moveToResult(directPanel, { block: "center", focus: chosen });
   } else if (mode === "ai") {
     const emphasis = document.getElementById("aiEmphasis");
-    if (emphasis) emphasis.focus();
+    moveToResult(aiPanel, { block: "start", focus: emphasis });
   }
 }
 
@@ -281,6 +308,7 @@ async function requestAiSuggestions(payload, loadingText) {
   const suggestionBox = document.getElementById("aiSuggestion");
   if (!suggestionBox) throw new Error("AI 결과 영역을 찾을 수 없습니다.");
   suggestionBox.innerHTML = `<div class="ai-loading">${escapeHtml(loadingText)}</div>`;
+  moveToResult(suggestionBox, { block: "center", delay: 20 });
 
   const response = await fetch("/api/ai/suggestions", {
     method: "POST",
@@ -336,6 +364,9 @@ function renderAiSuggestions(result, mode) {
   });
   const again = document.getElementById("aiGenerateAgain");
   if (again) again.addEventListener("click", makeRequestSentence);
+
+  const resultHeading = suggestionBox.querySelector(".ai-result-heading") || suggestionBox;
+  moveToResult(resultHeading, { block: "start", delay: 100 });
 }
 
 async function makeRequestSentence() {
@@ -397,8 +428,7 @@ function useAiSuggestion(index) {
   const directLabel = directPanel ? directPanel.querySelector(".preferred-sentence > span") : null;
   if (directLabel) directLabel.textContent = "최종 사용할 문구";
 
-  chosenSentence.focus();
-  chosenSentence.scrollIntoView({ behavior: "smooth", block: "center" });
+  moveToResult(chosenSentence, { block: "center", focus: chosenSentence });
   showMessage("선택한 문구를 최종 문구 입력란에 넣었습니다. 그대로 사용하거나 자유롭게 고쳐주세요.", "success");
 }
 
@@ -412,9 +442,8 @@ function openAiRefinePanel(index) {
   currentAiRefineText = text;
   base.textContent = `“${text}”`;
   panel.hidden = false;
-  panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
   const input = document.getElementById("aiRefineInstruction");
-  if (input) input.focus();
+  moveToResult(panel, { block: "center", focus: input });
 }
 
 function closeAiRefinePanel() {
@@ -757,7 +786,7 @@ function showRequestPreview(data, shouldScroll) {
 
   if (shouldScroll) {
     setTimeout(function () {
-      preview.scrollIntoView({ behavior: "smooth", block: "start" });
+      moveToResult(preview, { block: "start", delay: 50 });
     }, 50);
   }
 }
