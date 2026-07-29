@@ -1,0 +1,12 @@
+글결 Ver8.3 - 텔레그램 주문 알림
+
+- 관리자 화면에 ‘알림 설정’ 메뉴 추가
+- Bot Token 입력 후 Chat ID 자동 탐색 및 저장
+- 텔레그램 연결 상태 확인, 테스트 알림, 연결 해제 기능
+- 신규 주문 접수 즉시 텔레그램 알림 전송
+- 주문번호, 고객명, 연락처, 작품 종류, 희망일, 문구 방식, 최종 문구, 관리자 링크 포함
+- PostgreSQL 사용 시 app_settings 테이블에 설정 저장
+- 로컬 실행 시 data/settings.json에 설정 저장
+- Railway 환경변수 TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID도 지원하며 환경변수가 우선
+
+보안 주의: 노출된 기존 봇 토큰은 BotFather에서 반드시 Revoke 후 새 토큰을 사용하세요.

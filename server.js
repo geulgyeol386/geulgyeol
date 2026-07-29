@@ -15,6 +15,8 @@ const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-5.6-luna';
 const ORDER_NOTIFICATION_WEBHOOK_URL = process.env.ORDER_NOTIFICATION_WEBHOOK_URL || '';
 const ORDER_NOTIFICATION_WEBHOOK_SECRET = process.env.ORDER_NOTIFICATION_WEBHOOK_SECRET || '';
 const PUBLIC_BASE_URL = String(process.env.PUBLIC_BASE_URL || 'https://www.ai-seoye.com').replace(/\/$/, '');
+const TELEGRAM_BOT_TOKEN_ENV = process.env.TELEGRAM_BOT_TOKEN || '';
+const TELEGRAM_CHAT_ID_ENV = process.env.TELEGRAM_CHAT_ID || '';
 const { createStorage } = require('./storage');
 const storage = createStorage({ root: ROOT, dataDir: DATA_DIR });
 
@@ -115,26 +117,74 @@ function appendProgressHistory(current, patch) {
   return history;
 }
 
+async function telegramConfig() {
+  const saved = await storage.getSettings(['telegramBotToken', 'telegramChatId']);
+  return {
+    token: TELEGRAM_BOT_TOKEN_ENV || saved.telegramBotToken || '',
+    chatId: TELEGRAM_CHAT_ID_ENV || saved.telegramChatId || '',
+    source: TELEGRAM_BOT_TOKEN_ENV ? 'environment' : (saved.telegramBotToken ? 'admin' : '')
+  };
+}
+
+async function telegramApi(token, method, payload = {}) {
+  if (!token) throw Object.assign(new Error('텔레그램 봇 토큰이 등록되지 않았습니다.'), { status: 400 });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload), signal: controller.signal
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.ok) throw Object.assign(new Error(data.description || `텔레그램 API 오류 (${response.status})`), { status: 400 });
+    return data.result;
+  } finally { clearTimeout(timer); }
+}
+
+function telegramOrderText(order) {
+  const method = order.usedAi || order.sentenceMethod === 'ai' ? '🤖 AI와 함께 작성' : '✍ 직접 작성';
+  const sentence = String(order.sentence || '').trim() || '-';
+  return [
+    '🔔 글결 신규 주문', '',
+    `주문번호: ${order.id || '-'}`,
+    `고객: ${order.name || '-'}`,
+    `연락처: ${order.phone || '-'}`,
+    `작품: ${order.workType || '기타'}`,
+    `희망일: ${order.dueDate || '-'}`,
+    `문구 방식: ${method}`, '',
+    '📝 최종 문구', sentence, '',
+    `관리자: ${PUBLIC_BASE_URL}/admin.html`
+  ].join('\n');
+}
+
+async function sendTelegramMessage(text) {
+  const config = await telegramConfig();
+  if (!config.token || !config.chatId) return { sent: false, reason: 'not_configured' };
+  await telegramApi(config.token, 'sendMessage', { chat_id: config.chatId, text, disable_web_page_preview: true });
+  return { sent: true };
+}
+
 async function notifyNewOrder(order) {
+  try {
+    const telegram = await sendTelegramMessage(telegramOrderText(order));
+    if (telegram.sent) return;
+  } catch (error) {
+    console.error('텔레그램 주문 알림 오류:', error.message);
+  }
   if (!ORDER_NOTIFICATION_WEBHOOK_URL) return;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 5000);
   try {
-    const payload = {
-      event: 'new_order',
-      title: '글결 새 주문 접수',
+    const payload = { event: 'new_order', title: '글결 새 주문 접수',
       message: `새 주문이 접수되었습니다.\n고객: ${order.name || '-'}\n작품: ${order.workType || '기타'}\n주문번호: ${order.id}`,
       order: { id: order.id, storageId: order.storageId, name: order.name, phone: order.phone, workType: order.workType, dueDate: order.dueDate },
-      adminUrl: `${PUBLIC_BASE_URL}/admin.html`,
-      sentAt: new Date().toISOString()
-    };
+      adminUrl: `${PUBLIC_BASE_URL}/admin.html`, sentAt: new Date().toISOString() };
     const headers = { 'Content-Type': 'application/json' };
     if (ORDER_NOTIFICATION_WEBHOOK_SECRET) headers['X-Webhook-Secret'] = ORDER_NOTIFICATION_WEBHOOK_SECRET;
     const response = await fetch(ORDER_NOTIFICATION_WEBHOOK_URL, { method: 'POST', headers, body: JSON.stringify(payload), signal: controller.signal });
     if (!response.ok) console.error('주문 알림 전송 실패:', response.status);
-  } catch (error) {
-    console.error('주문 알림 전송 오류:', error.message);
-  } finally { clearTimeout(timer); }
+  } catch (error) { console.error('주문 알림 전송 오류:', error.message); }
+  finally { clearTimeout(timer); }
 }
 
 function publicGalleryOrder(o) {
@@ -346,10 +396,32 @@ async function handleApi(req, res, pathname) {
       return sendJson(res, 200, await storage.listOrders());
     }
     if (pathname === '/api/admin/notification-status' && req.method === 'GET') {
-      return sendJson(res, 200, { configured: Boolean(ORDER_NOTIFICATION_WEBHOOK_URL), publicBaseUrl: PUBLIC_BASE_URL });
+      const config = await telegramConfig();
+      return sendJson(res, 200, { configured: Boolean(config.token && config.chatId), telegram: { tokenSaved: Boolean(config.token), chatIdSaved: Boolean(config.chatId), chatId: config.chatId ? String(config.chatId) : '', source: config.source }, publicBaseUrl: PUBLIC_BASE_URL });
+    }
+    if (pathname === '/api/admin/telegram/connect' && req.method === 'POST') {
+      const body = await readJson(req, 64 * 1024);
+      const token = String(body.token || '').trim() || (await telegramConfig()).token;
+      const me = await telegramApi(token, 'getMe');
+      const updates = await telegramApi(token, 'getUpdates', { limit: 100, timeout: 0, allowed_updates: ['message'] });
+      const messages = Array.isArray(updates) ? updates.map(x => x && x.message).filter(Boolean) : [];
+      const latest = messages.reverse().find(m => m.chat && (m.chat.type === 'private' || m.chat.type === 'group' || m.chat.type === 'supergroup'));
+      if (!latest) return sendJson(res, 400, { error: '봇 대화방에서 /start 또는 아무 메시지를 한 번 보낸 뒤 다시 연결해 주세요.' });
+      await storage.setSettings({ telegramBotToken: token, telegramChatId: String(latest.chat.id), telegramBotUsername: String(me.username || '') });
+      return sendJson(res, 200, { ok: true, botUsername: me.username || '', chatId: String(latest.chat.id), chatName: latest.chat.first_name || latest.chat.title || '' });
+    }
+    if (pathname === '/api/admin/telegram/test' && req.method === 'POST') {
+      const result = await sendTelegramMessage(`✅ 글결 텔레그램 알림 연결 성공\n\n이제 새 주문이 접수되면 이 대화방으로 알려드립니다.\n${PUBLIC_BASE_URL}`);
+      if (!result.sent) return sendJson(res, 400, { error: '텔레그램 연결 정보가 없습니다. 먼저 봇 토큰을 연결해 주세요.' });
+      return sendJson(res, 200, { ok: true });
+    }
+    if (pathname === '/api/admin/telegram/disconnect' && req.method === 'POST') {
+      if (TELEGRAM_BOT_TOKEN_ENV || TELEGRAM_CHAT_ID_ENV) return sendJson(res, 400, { error: 'Railway 환경변수로 설정되어 있어 관리자 화면에서 해제할 수 없습니다.' });
+      await storage.setSettings({ telegramBotToken: '', telegramChatId: '', telegramBotUsername: '' });
+      return sendJson(res, 200, { ok: true });
     }
     if (pathname === '/api/admin/backup' && req.method === 'GET') {
-      return sendJson(res, 200, { version: '8.2', exportedAt: new Date().toISOString(), orders: await storage.listOrders() });
+      return sendJson(res, 200, { version: '8.3', exportedAt: new Date().toISOString(), orders: await storage.listOrders() });
     }
     if (pathname === '/api/admin/import' && req.method === 'POST') {
       const body = await readJson(req);
@@ -420,6 +492,7 @@ async function start() {
       console.log(`글결 서버 실행: http://${HOST}:${PORT}`);
       console.log(`주문 저장소: ${storage.usePostgres ? 'PostgreSQL' : storage.dataFile}`);
       console.log(`AI 문구 추천: ${OPENAI_API_KEY ? OPENAI_MODEL : 'OPENAI_API_KEY 미설정'}`);
+      console.log(`텔레그램 알림: ${TELEGRAM_BOT_TOKEN_ENV && TELEGRAM_CHAT_ID_ENV ? '환경변수 설정' : '관리자 화면에서 연결 가능'}`);
       if (!ADMIN_PASSWORD) console.warn('주의: Railway에 ADMIN_PASSWORD가 적용되지 않았습니다. Variables 변경 후 staged changes의 Deploy를 실행하세요.');
       else if (!IS_RAILWAY && ADMIN_PASSWORD === 'change-this-password') console.warn('주의: 로컬 기본 관리자 비밀번호를 사용 중입니다.');
     });

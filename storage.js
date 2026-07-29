@@ -5,12 +5,14 @@ function createStorage(options = {}) {
   const root = options.root || __dirname;
   const dataDir = path.resolve(options.dataDir || path.join(root, 'data'));
   const dataFile = path.join(dataDir, 'orders.json');
+  const settingsFile = path.join(dataDir, 'settings.json');
   const databaseUrl = process.env.DATABASE_URL || '';
   const usePostgres = Boolean(databaseUrl);
   let pool = null;
 
   fs.mkdirSync(dataDir, { recursive: true });
   if (!fs.existsSync(dataFile)) fs.writeFileSync(dataFile, '[]', 'utf8');
+  if (!fs.existsSync(settingsFile)) fs.writeFileSync(settingsFile, '{}', 'utf8');
 
   function readJsonOrders() {
     try {
@@ -83,6 +85,13 @@ function createStorage(options = {}) {
       )
     `);
     await pool.query('CREATE INDEX IF NOT EXISTS idx_orders_order_number ON orders(order_number)');
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS app_settings (
+        setting_key TEXT PRIMARY KEY,
+        setting_value TEXT NOT NULL DEFAULT '',
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
 
     // 기존 JSON 파일에 주문이 있고 DB가 비어 있으면 최초 1회 자동 이관합니다.
     const countResult = await pool.query('SELECT COUNT(*)::int AS count FROM orders');
@@ -247,6 +256,59 @@ function createStorage(options = {}) {
     }
   }
 
+
+  function readJsonSettings() {
+    try {
+      const value = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
+      return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+    } catch { return {}; }
+  }
+
+  function writeJsonSettings(value) {
+    const temp = settingsFile + '.tmp';
+    fs.writeFileSync(temp, JSON.stringify(value, null, 2), 'utf8');
+    fs.renameSync(temp, settingsFile);
+  }
+
+  async function getSettings(keys = []) {
+    const requested = Array.isArray(keys) ? keys.map(String) : [];
+    if (!usePostgres) {
+      const all = readJsonSettings();
+      if (!requested.length) return all;
+      return Object.fromEntries(requested.map(key => [key, String(all[key] || '')]));
+    }
+    const result = requested.length
+      ? await pool.query('SELECT setting_key, setting_value FROM app_settings WHERE setting_key = ANY($1::text[])', [requested])
+      : await pool.query('SELECT setting_key, setting_value FROM app_settings');
+    const out = {};
+    for (const row of result.rows) out[row.setting_key] = row.setting_value;
+    for (const key of requested) if (!(key in out)) out[key] = '';
+    return out;
+  }
+
+  async function setSettings(patch = {}) {
+    const clean = {};
+    for (const [key, value] of Object.entries(patch || {})) clean[String(key)] = String(value ?? '');
+    if (!usePostgres) {
+      const merged = { ...readJsonSettings(), ...clean };
+      writeJsonSettings(merged);
+      return merged;
+    }
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      for (const [key, value] of Object.entries(clean)) {
+        await client.query(`INSERT INTO app_settings(setting_key, setting_value, updated_at) VALUES($1,$2,NOW())
+          ON CONFLICT(setting_key) DO UPDATE SET setting_value=EXCLUDED.setting_value, updated_at=NOW()`, [key, value]);
+      }
+      await client.query('COMMIT');
+      return await getSettings(Object.keys(clean));
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally { client.release(); }
+  }
+
   return {
     usePostgres,
     dataFile,
@@ -257,7 +319,9 @@ function createStorage(options = {}) {
     findCustomerOrder,
     updateOrder,
     deleteOrder,
-    importOrders
+    importOrders,
+    getSettings,
+    setSettings
   };
 }
 

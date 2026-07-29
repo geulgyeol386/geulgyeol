@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>글결 관리자 | 주문·작품 관리</title>
-  <link rel="stylesheet" href="admin.css?v=8.0">
+  <link rel="stylesheet" href="admin.css?v=8.3">
 </head>
 <body>
   <div id="adminLogin" class="admin-login" hidden>
@@ -21,7 +21,7 @@
   </div>
   <header class="admin-header">
     <div>
-      <p class="eyebrow">GEULGYEOL ADMIN <span class="version-badge">Ver8.0</span></p>
+      <p class="eyebrow">GEULGYEOL ADMIN <span class="version-badge">Ver8.3</span></p>
       <h1>주문·작품 관리</h1>
     </div>
     <div class="admin-header-actions">
@@ -29,6 +29,7 @@
       <button id="ordersViewButton" type="button" class="header-tab">주문 관리</button>
       <button id="archiveViewButton" type="button" class="header-tab">작품 아카이브</button>
       <button id="settlementViewButton" type="button" class="header-tab">월별 결산</button>
+      <button id="settingsViewButton" type="button" class="header-tab">알림 설정</button>
       <a class="home-link" href="index.html">홈페이지로 돌아가기</a>
     </div>
   </header>
@@ -174,6 +175,31 @@
         <div class="table-wrap"><table class="settlement-table order-summary-table"><thead><tr><th>접수일</th><th>주문번호</th><th>고객</th><th>작품 종류</th><th>진행 상태</th><th>입금</th><th>실제 수입</th><th>메모</th></tr></thead><tbody id="monthlyOrderRows"></tbody></table></div>
       </section>
     </section>
+
+    <section id="settingsView" class="settings-view" hidden>
+      <div class="settings-heading">
+        <div><p class="eyebrow">NOTIFICATION</p><h2>텔레그램 주문 알림</h2><p>새 주문이 접수되면 ‘글결알림’ 봇이 이 대화방으로 즉시 알려드립니다.</p></div>
+        <span id="telegramStatusBadge" class="telegram-status">확인 중</span>
+      </div>
+      <section class="settings-card">
+        <h3>봇 연결</h3>
+        <ol class="telegram-guide"><li>텔레그램에서 만든 <strong>글결알림 봇</strong> 대화방에 <code>/start</code> 또는 아무 메시지를 보냅니다.</li><li>BotFather가 발급한 새 토큰을 아래에 붙여넣습니다.</li><li><strong>연결 및 Chat ID 찾기</strong>를 누릅니다.</li></ol>
+        <label class="token-field"><span>Telegram Bot Token</span><input id="telegramToken" type="password" autocomplete="new-password" placeholder="숫자:영문 형태의 봇 토큰"><small>토큰은 관리자 인증을 거친 서버에만 저장되며 화면에 다시 표시되지 않습니다.</small></label>
+        <div class="telegram-actions"><button id="telegramConnectButton" type="button" class="primary">연결 및 Chat ID 찾기</button><button id="telegramTestButton" type="button">테스트 알림 보내기</button><button id="telegramDisconnectButton" type="button" class="danger">연결 해제</button></div>
+        <div id="telegramResult" class="telegram-result" aria-live="polite"></div>
+      </section>
+      <section class="settings-card telegram-preview"><h3>주문 알림 예시</h3><pre>🔔 글결 신규 주문
+
+주문번호: 2026-001
+고객: 홍길동
+연락처: 010-0000-0000
+작품: 청첩장
+문구 방식: 🤖 AI와 함께 작성
+
+📝 최종 문구
+두 사람이 한마음으로 새로운 길을 시작합니다.</pre></section>
+    </section>
+
   </main>
 
   <div id="detailModal" class="modal" hidden>
@@ -223,7 +249,7 @@
     </section>
   </div>
 
-  <script src="admin.js?v=8.2.2" defer></script>
+  <script src="admin.js?v=8.3" defer></script>
 <script>
 (() => {
   "use strict";
