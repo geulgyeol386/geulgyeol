@@ -1,8 +1,8 @@
 {
   "name": "geulgyeol",
-  "version": "8.3.0",
+  "version": "8.4.0",
   "private": true,
-  "description": "글결 서예 주문 및 작품 관리 웹서비스",
+  "description": "글결 서예 주문 및 작품 관리 웹서비스 - 중앙 가격 설정 적용",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

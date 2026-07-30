@@ -262,13 +262,11 @@ function getSelectedAiLengthRange() {
 }
 
 function getAiLengthSetting(range) {
-  const settings = {
-    short: { label: "30자 미만", price: "10,000원", min: 1, max: 29 },
-    medium: { label: "30~60자", price: "20,000원", min: 30, max: 59 },
-    long: { label: "60~100자", price: "30,000원", min: 60, max: 99 },
-    veryLong: { label: "100자 이상", price: "50,000원", min: 100, max: Number.POSITIVE_INFINITY }
-  };
-  return settings[range] || settings.short;
+  const pricing = window.GEULGYEOL_PRICING;
+  const tier = pricing && pricing.characterTiers.find(item => item.key === range);
+  const fallback = { key: "short", label: "30자 미만", price: 10000, min: 1, max: 29 };
+  const selected = tier || fallback;
+  return { ...selected, price: pricing ? pricing.money(selected.price) : Number(selected.price).toLocaleString("ko-KR") + "원" };
 }
 
 function updateStoryCount() {
@@ -792,21 +790,31 @@ function showRequestPreview(data, shouldScroll) {
 }
 
 function getBasePrice(workSize, sentence) {
-  let sizePrice = 10000;
-  const size = workSize || "";
-
-  if (size.includes("신문지 한 면보다 큰")) sizePrice = 50000;
-  else if (size.includes("절반 초과")) sizePrice = 30000;
-  else if (size.includes("A4 ~")) sizePrice = 20000;
-
-  const count = countSentenceCharacters(sentence || "");
-  let characterPrice = 10000;
-  if (count >= 100) characterPrice = 50000;
-  else if (count >= 60) characterPrice = 30000;
-  else if (count >= 30) characterPrice = 20000;
-
-  return Math.max(sizePrice, characterPrice).toLocaleString("ko-KR") + "원";
+  const pricing = window.GEULGYEOL_PRICING;
+  if (!pricing) return "가격 확인 필요";
+  return pricing.money(pricing.calculate(workSize, sentence).price);
 }
+
+function renderPricingFromConfig() {
+  const pricing = window.GEULGYEOL_PRICING;
+  if (!pricing) return;
+  const row = item => `<div class="price-row"><span>${escapeHtml(item.label)}</span><strong>${pricing.money(item.price)}</strong></div>`;
+  const sizeTable = document.getElementById("sizePriceTable");
+  const characterTable = document.getElementById("characterPriceTable");
+  const workSize = document.getElementById("workSize");
+  const aiOptions = document.getElementById("aiLengthOptions");
+  if (sizeTable) sizeTable.innerHTML = pricing.sizeTiers.map(row).join("");
+  if (characterTable) characterTable.innerHTML = pricing.characterTiers.map(row).join("");
+  if (workSize) workSize.insertAdjacentHTML("beforeend", pricing.sizeTiers.map(item => `<option>${escapeHtml(item.label)}</option>`).join(""));
+  if (aiOptions) aiOptions.innerHTML = pricing.characterTiers.map((item, index) => `<label class="ai-length-option"><input type="radio" name="aiLengthRange" value="${escapeHtml(item.key)}" ${index === 0 ? "checked" : ""}><span><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.label)} · ${pricing.money(item.price)}</small></span></label>`).join("");
+  const areaNotice = document.getElementById("areaPriceNotice");
+  const multipleNotice = document.getElementById("multipleWorkNotice");
+  if (areaNotice) areaNotice.textContent = pricing.areaNotice;
+  if (multipleNotice) multipleNotice.textContent = pricing.multipleNotice;
+}
+
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", renderPricingFromConfig, { once: true });
+else renderPricingFromConfig();
 
 function printInfo(label, value) {
   return `

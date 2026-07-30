@@ -223,7 +223,8 @@ function aiLengthInstruction(range) {
     short: '각 문구는 공백 제외 15~29자를 목표로 하세요.',
     medium: '각 문구는 공백 제외 30~59자를 목표로 하세요.',
     long: '각 문구는 공백 제외 60~99자를 목표로 하세요.',
-    veryLong: '각 문구는 공백 제외 100~150자를 목표로 하세요.'
+    veryLong: '각 문구는 공백 제외 90~119자를 목표로 하세요.',
+    ultraLong: '각 문구는 공백 제외 120~170자를 목표로 하세요.'
   };
   return map[range] || map.short;
 }

@@ -283,27 +283,18 @@
       <div class="pricing-grid">
         <div class="pricing-box">
           <h3>작품 크기 기준</h3>
-          <div class="price-table">
-            <div class="price-row"><span>A4 미만</span><strong>10,000원</strong></div>
-            <div class="price-row"><span>A4 ~ 신문지 한 면의 절반 이하</span><strong>20,000원</strong></div>
-            <div class="price-row"><span>신문지 한 면의 절반 초과 ~ 신문지 한 면</span><strong>30,000원</strong></div>
-            <div class="price-row"><span>신문지 한 면보다 큰 작품</span><strong>50,000원</strong></div>
-          </div>
+          <div class="price-table" id="sizePriceTable"></div>
         </div>
 
         <div class="pricing-box">
           <h3>글자 수 기준</h3>
-          <div class="price-table">
-            <div class="price-row"><span>30자 미만</span><strong>10,000원</strong></div>
-            <div class="price-row"><span>30 ~ 60자</span><strong>20,000원</strong></div>
-            <div class="price-row"><span>60 ~ 100자</span><strong>30,000원</strong></div>
-            <div class="price-row"><span>100자 이상</span><strong>50,000원</strong></div>
-          </div>
+          <div class="price-table" id="characterPriceTable"></div>
         </div>
       </div>
 
       <div class="price-guide">
         <p><strong>작품의 크기와 글자 수 중 높은 기준의 금액</strong>을 기본비용으로 적용합니다</p>
+        <p id="areaPriceNotice">※ 지정규격이 아닌 가로세로 비율이 달라질 때 동일 면적 기준으로 적용합니다.</p>
         <p>의뢰 내용이 특별한 경우에는 충분히 상담한 뒤 안내드립니다</p>
         <p>상담을 마친 후 비용을 <strong>계좌이체(통장입금)</strong>해 주시면 제작을 시작합니다</p>
         <div class="gyeolgyeol-heart-box" aria-label="글결의 마음">
@@ -316,10 +307,7 @@
         </div>
       </div>
 
-      <p class="price-note">
-        연하장처럼 같은 내용을 여러 장 제작하는 경우에는<br>
-        수량과 작업 방식에 따라 협의하여 조정합니다
-      </p>
+      <p class="price-note" id="multipleWorkNotice">같은 내용의 작품을 여러 장 제작하는 경우에는 수량과 작업 방식에 따라 비용을 협의하여 조정합니다.</p>
     </div>
   </section>
 
@@ -393,13 +381,7 @@
 
         <label>
           <span>희망 크기</span>
-          <select id="workSize">
-            <option>함께 상의</option>
-            <option>A4 미만</option>
-            <option>A4 ~ 신문지 한 면의 절반 이하</option>
-            <option>신문지 한 면의 절반 초과 ~ 신문지 한 면</option>
-            <option>신문지 한 면보다 큰 작품</option>
-          </select>
+          <select id="workSize"><option>함께 상의</option></select>
         </label>
 
         <label>
@@ -494,12 +476,7 @@
 
           <fieldset class="ai-length-fieldset">
             <legend>원하는 문구 길이를 선택하세요</legend>
-            <div class="ai-length-options">
-              <label class="ai-length-option"><input type="radio" name="aiLengthRange" value="short" checked><span><strong>짧게</strong><small>30자 미만 · 10,000원</small></span></label>
-              <label class="ai-length-option"><input type="radio" name="aiLengthRange" value="medium"><span><strong>보통</strong><small>30~60자 · 20,000원</small></span></label>
-              <label class="ai-length-option"><input type="radio" name="aiLengthRange" value="long"><span><strong>길게</strong><small>60~100자 · 30,000원</small></span></label>
-              <label class="ai-length-option"><input type="radio" name="aiLengthRange" value="veryLong"><span><strong>매우 길게</strong><small>100자 이상 · 50,000원</small></span></label>
-            </div>
+            <div class="ai-length-options" id="aiLengthOptions"></div>
             <p class="ai-length-notice">글자 수는 공백을 제외하여 계산하며, 작품의 크기와 글자 수 중 높은 기준의 금액이 적용됩니다.</p>
           </fieldset>
 
@@ -625,7 +602,8 @@
   <p id="modalCaption"></p>
 </div>
 
-<script src="script.js?v=8.2.2.2" defer></script>
+<script src="pricing-config.js?v=8.4" defer></script>
+<script src="script.js?v=8.4" defer></script>
 <script>
 (() => {
   "use strict";
