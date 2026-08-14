@@ -278,13 +278,13 @@ function updateStoryCount() {
 
 function inferWorkTypeFromStory(story) {
   const text = (story || "").toLowerCase();
-  if (/가훈|좌우명|교훈|집안.*글|가족.*뜻/.test(text)) return "가훈";
+  if (/가훈|좌우명|교훈|집안.*글|가족.*뜻/.test(text)) return "가훈, 사훈";
   if (/청첩|결혼.*초대|예식.*초대|혼인.*초대/.test(text)) return "청첩장";
   if (/입춘|입춘대길|건양다경/.test(text)) return "입춘첩";
   if (/연하|새해|신년|설날/.test(text)) return "연하장";
   if (/감사|고마움|퇴임|퇴직|은퇴|스승|선생님/.test(text)) return "감사의 글";
   if (/축하|손주|출산|돌|생일|승진|개업|합격|입학|졸업/.test(text)) return "축하글";
-  if (/액자|걸어두|벽에|작품으로/.test(text)) return "액자";
+  if (/액자|걸어두|벽에|작품으로/.test(text)) return "벽면장식글";
   return "기타";
 }
 

@@ -188,7 +188,17 @@ async function notifyNewOrder(order) {
 }
 
 function publicGalleryOrder(o) {
-  return { workType: o.workType || '', sentence: o.sentence || '', archiveTitle: o.archiveTitle || '', completedDate: o.completedDate || '', completedImage: o.completedImage || '', featuredWork: Boolean(o.featuredWork) };
+  return { workType: o.workType || '', sentence: o.sentence || '', archiveTitle: o.archiveTitle || '', description: o.description || '', completedDate: o.completedDate || '', completedImage: o.completedImage || '', featuredWork: Boolean(o.featuredWork) };
+}
+
+function readCuratedGallery() {
+  try {
+    const file = path.join(DATA_DIR, 'gallery.json');
+    const rows = JSON.parse(fs.readFileSync(file, 'utf8'));
+    return Array.isArray(rows) ? rows.filter(o => o && o.completedImage).map(publicGalleryOrder) : [];
+  } catch {
+    return [];
+  }
 }
 
 function extractResponseText(payload) {
@@ -265,7 +275,7 @@ async function createAiSuggestions(body) {
 
   const instructions = `당신은 한국 서예 작품을 위한 문구를 제안하는 '글결'의 문안 전문가입니다.
 고객이 선택한 작품 종류가 있으면 그것을 우선 반영하고, 사연의 실제 목적과 어긋날 때만 자연스럽게 보완하세요.
-가능한 작품 유형: 가훈, 청첩장, 연하장, 감사표시글, 행사답례글, 소품글씨, 인테리어용글귀, 액자, 축하글씨, 입춘첩, 인쇄물표지, 기타.
+가능한 작품 유형: 가훈, 사훈, 청첩장, 연하장, 감사표시글, 행사답례글, 소품글씨, 벽면장식글, 큰글씨, 축하글씨, 입춘첩, 인쇄물표지, 기타.
 
 핵심 원칙:
 - 사연의 목적과 원하는 뜻을 최우선으로 반영합니다.
@@ -329,7 +339,7 @@ async function createAiSuggestions(body) {
   }
 
   const parsed = parseAiJson(extractResponseText(payload));
-  const allowedTypes = new Set(['가훈', '청첩장', '연하장', '감사표시글', '행사답례글', '소품글씨', '인테리어용글귀', '액자', '축하글씨', '입춘첩', '인쇄물표지', '기타']);
+  const allowedTypes = new Set(['가훈, 사훈', '가훈', '청첩장', '연하장', '감사표시글', '행사답례글', '소품글씨', '벽면장식글', '인테리어용글귀', '큰글씨', '액자', '축하글씨', '입춘첩', '인쇄물표지', '기타']);
   const workType = allowedTypes.has(requestedWorkType) ? requestedWorkType : (allowedTypes.has(parsed.workType) ? parsed.workType : '기타');
   const fallbackLabels = mode === 'refine'
     ? ['정돈한 표현', '감성을 살린 표현', '작품성을 높인 표현']

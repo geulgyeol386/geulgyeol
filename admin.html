@@ -81,8 +81,8 @@
         <span>작품 종류</span>
         <select id="workTypeFilter">
           <option value="">전체 종류</option>
-          <option>가훈</option><option>청첩장</option><option>연하장</option><option>감사표시글</option>
-          <option>행사답례글</option><option>소품글씨</option><option>인테리어용글귀</option><option>액자</option>
+          <option>가훈, 사훈</option><option value="가훈" hidden>가훈 (기존)</option><option>청첩장</option><option>연하장</option><option>감사표시글</option>
+          <option>행사답례글</option><option>소품글씨</option><option>벽면장식글</option><option>큰글씨</option><option value="액자" hidden>액자 (기존)</option>
           <option>축하글씨</option><option>입춘첩</option><option>인쇄물표지</option><option>기타</option>
         </select>
       </label>
@@ -125,7 +125,7 @@
         <article><span>대표작</span><strong id="archiveCountFeatured">0</strong></article>
       </section>
       <section class="archive-toolbar">
-        <label><span>작품 종류</span><select id="archiveTypeFilter"><option value="">전체 종류</option><option>가훈</option><option>청첩장</option><option>연하장</option><option>감사표시글</option><option>행사답례글</option><option>소품글씨</option><option>인테리어용글귀</option><option>액자</option><option>축하글씨</option><option>입춘첩</option><option>인쇄물표지</option><option>기타</option></select></label>
+        <label><span>작품 종류</span><select id="archiveTypeFilter"><option value="">전체 종류</option><option>가훈, 사훈</option><option value="가훈" hidden>가훈 (기존)</option><option>청첩장</option><option>연하장</option><option>감사표시글</option><option>행사답례글</option><option>소품글씨</option><option>벽면장식글</option><option>큰글씨</option><option value="액자" hidden>액자 (기존)</option><option>축하글씨</option><option>입춘첩</option><option>인쇄물표지</option><option>기타</option></select></label>
         <label><span>공개 상태</span><select id="archivePublicFilter"><option value="">전체</option><option value="public">공개 중</option><option value="private">비공개</option><option value="featured">대표작</option></select></label>
       </section>
       <div id="archiveList" class="archive-list"></div>
@@ -214,7 +214,7 @@
         <div id="customerSummary" class="customer-summary"></div>
 
         <div class="form-grid">
-          <label><span>작품 종류</span><select id="adminWorkType"><option>가훈</option><option>청첩장</option><option>연하장</option><option>감사표시글</option><option>행사답례글</option><option>소품글씨</option><option>인테리어용글귀</option><option>액자</option><option>축하글씨</option><option>입춘첩</option><option>인쇄물표지</option><option>기타</option></select></label>
+          <label><span>작품 종류</span><select id="adminWorkType"><option>가훈, 사훈</option><option value="가훈" hidden>가훈 (기존)</option><option>청첩장</option><option>연하장</option><option>감사표시글</option><option>행사답례글</option><option>소품글씨</option><option>벽면장식글</option><option>큰글씨</option><option value="액자" hidden>액자 (기존)</option><option>축하글씨</option><option>입춘첩</option><option>인쇄물표지</option><option>기타</option></select></label>
           <label><span>진행 상태</span><select id="adminStatus"><option>신규 접수</option><option>상담 중</option><option>입금 완료</option><option>제작 중</option><option>제작 완료</option><option>발송 완료</option><option>취소·미진행</option></select></label>
           <label><span>입금 여부</span><select id="adminPayment"><option>미입금</option><option>입금 완료</option></select></label>
           <label><span>기본비용</span><input id="adminBasePrice" type="number" min="0" step="1000"></label>

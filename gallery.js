@@ -123,28 +123,30 @@ document.addEventListener('DOMContentLoaded', async () => {
   let activeType = '';
 
   const renderGallery = () => {
-    const visible = activeType ? rows.filter((o) => o.workType === activeType) : rows;
+    const normalizeWorkType = (type) => type === '가훈' ? '가훈, 사훈' : type === '액자' ? '큰글씨' : type === '인테리어용글귀' ? '벽면장식글' : type;
+    const visible = activeType ? rows.filter((o) => normalizeWorkType(o.workType) === activeType) : rows;
     if (!visible.length) {
       root.innerHTML = '<div class="empty-gallery"><strong>해당 종류의 공개 작품을 준비하고 있습니다.</strong><p>고객의 동의를 받은 작품만 이곳에 소개됩니다.</p></div>';
       return;
     }
     root.innerHTML = visible.map((o, i) => `
       <article class="gallery-card ${o.featuredWork ? 'is-featured' : ''}" data-gallery-index="${i}">
-        <button type="button" class="gallery-image-button" aria-label="${esc(o.workType || '완성 작품')} 크게 보기">
+        <button type="button" class="gallery-image-button" aria-label="${esc(normalizeWorkType(o.workType) || '완성 작품')} 크게 보기">
           <img src="${o.completedImage}" alt="${esc(o.workType || '글결 완성 작품')}">
           ${o.featuredWork ? '<span class="gallery-featured-badge">대표작</span>' : ''}
           <span class="gallery-zoom-hint">🔍 크게 보기</span>
         </button>
         <div class="gallery-card-info">
-          <span>${esc(o.workType || '완성 작품')}</span>
+          <span>${esc(normalizeWorkType(o.workType) || '완성 작품')}</span>
           <h2>${esc(o.archiveTitle || o.sentence || '마음을 담은 글씨')}</h2>
-          <p>${esc(o.completedDate || '')}</p>
+          ${o.description ? `<p class="gallery-description">${esc(o.description)}</p>` : ''}
+          ${o.completedDate ? `<p>${esc(o.completedDate)}</p>` : ''}
           <button type="button" class="gallery-open-button">작품 크게 보기</button>
         </div>
       </article>`).join('');
     root.querySelectorAll('.gallery-card').forEach((card) => {
       const row = visible[Number(card.dataset.galleryIndex)];
-      const open = () => row?.completedImage && viewer.openWork({ src: row.completedImage, workType: row.workType, sentence: row.archiveTitle || row.sentence });
+      const open = () => row?.completedImage && viewer.openWork({ src: row.completedImage, workType: normalizeWorkType(row.workType), sentence: row.archiveTitle || row.sentence });
       card.querySelector('.gallery-image-button')?.addEventListener('click', open);
       card.querySelector('.gallery-open-button')?.addEventListener('click', open);
     });
