@@ -10,7 +10,10 @@
 <body>
 
 <header class="site-header">
-  <a class="brand" href="#top" aria-label="글결 홈"><span class="brand-text">글결</span><img class="brand-seal" src="images/geulgyeol-seal.png" alt="글결 서예 낙관"></a>
+  <a class="brand" href="#top" aria-label="글결 홈">
+    <span class="brand-text">글결</span>
+    <img class="brand-seal" src="images/geulgyeol-hangul-seal.png" alt="글결 한글 낙관">
+  </a>
 
   <nav class="main-nav">
     <a href="#story">글결 이야기</a>
@@ -174,25 +177,6 @@
       </article>
 
       <article class="work-card reveal">
-        <button type="button" class="image-button" onclick="openImage('images/dubo-odeon-yulsi.jpg', '두보의 오언율시')">
-          <img src="images/dubo-odeon-yulsi.jpg" alt="두보의 오언율시 작품">
-        </button>
-        <div class="work-text"><h3>두보의 오언율시</h3><p>시성(詩聖) 두보(杜甫)가 지은 오언율시로, 벼슬길에서 물러나 타향을 전전하던 두보가 늙고 병든 처지에서 과거의 인연과 음식을 추억하며 쓸쓸한 심경을 담아낸 작품입니다.</p></div>
-      </article>
-      <article class="work-card reveal">
-        <button type="button" class="image-button" onclick="openImage('images/inyeon.jpg', '인연')">
-          <img src="images/inyeon.jpg" alt="인연 작품">
-        </button>
-        <div class="work-text"><h3>인연</h3><p>가수 이선희씨의 〈인연〉의 가삿말을 옮겨 적은 것으로 전지 크기에 한글 흘림체로 쓴 작품입니다.</p></div>
-      </article>
-      <article class="work-card reveal">
-        <button type="button" class="image-button" onclick="openImage('images/gohyang-gil.jpg', '길은 처음부터 있던 것이 아니다')">
-          <img src="images/gohyang-gil.jpg" alt="길은 처음부터 있던 것이 아니다 작품">
-        </button>
-        <div class="work-text"><h3>길은 처음부터 있던 것이 아니다</h3><p>루쉰의 『고향』 구절에 뜻을 보태어 전해오는 삶의 경구를 더한 작품으로, 전지 크기에 한글 궁체 정자체로 썼습니다.</p></div>
-      </article>
-
-      <article class="work-card reveal">
         <button type="button" class="image-button" onclick="openImage('images/yeomindongrak.jpg', '여민동락')">
           <img src="images/yeomindongrak.jpg" onerror="this.style.display='none'; this.parentElement.classList.add('missing-work-image')" alt="여민동락 작품">
         </button>
@@ -250,6 +234,36 @@
         <div class="work-text">
           <h3>봄날처럼</h3>
           <p>언제나 봄날처럼 따뜻하고 행복하기를 바라는 마음입니다.</p>
+        </div>
+      </article>
+
+      <article class="work-card reveal">
+        <button type="button" class="image-button" onclick="openImage('images/dubo-odeon-yulsi.jpg', '두보의 오언율시')">
+          <img src="images/dubo-odeon-yulsi.jpg" onerror="this.style.display='none'; this.parentElement.classList.add('missing-work-image')" alt="두보의 오언율시 작품">
+        </button>
+        <div class="work-text">
+          <h3>두보의 오언율시</h3>
+          <p>시성(詩聖) 두보(杜甫)가 지은 오언율시로 제목은 〈제어지인조호반금대갱(齊魚知人雕胡飯錦帶羹)〉으로 알려져 있는 작품입니다. 벼슬길에서 물러나 타향을 전전하던 두보가 늙고 병든 처지에서, 과거 제어지인(齊魚知人)이라는 인물이 보내주었던 맛깔난 음식(줄밥과 순채국)을 추억하며 쓸쓸한 심경을 담아낸 시입니다.</p>
+        </div>
+      </article>
+
+      <article class="work-card reveal">
+        <button type="button" class="image-button" onclick="openImage('images/inyeon.jpg', '인연')">
+          <img src="images/inyeon.jpg" onerror="this.style.display='none'; this.parentElement.classList.add('missing-work-image')" alt="인연 작품">
+        </button>
+        <div class="work-text">
+          <h3>인연</h3>
+          <p>가수 이선희씨의 인연의 가삿말을 옮겨 적은 것으로 전지크기에 한글 흘림체로 쓴 작품입니다.</p>
+        </div>
+      </article>
+
+      <article class="work-card reveal">
+        <button type="button" class="image-button" onclick="openImage('images/gohyang-gil.jpg', '길은 처음부터 있던 것이 아니다')">
+          <img src="images/gohyang-gil.jpg" onerror="this.style.display='none'; this.parentElement.classList.add('missing-work-image')" alt="길은 처음부터 있던 것이 아니다 작품">
+        </button>
+        <div class="work-text">
+          <h3>길은 처음부터 있던 것이 아니다</h3>
+          <p>루쉰의 '고향' 구절에 뜻을 보태어 전해오는 삶의 경구를 보태어 전지크기(신문지 두면크기)에 한글 궁체 정자체로 쓴 작품입니다.</p>
         </div>
       </article>
     </div>
@@ -604,8 +618,11 @@
 </main>
 
 <footer class="closing-footer">
-  <p>이 글씨의 주인은 제가 아니고 당신입니다.</p>
-  <p>저는 당신의 마음을 붓끝에 담아 드리는 글씨쟁이 입니다.</p>
+  <p>
+    이 글씨의 주인은 제가 아닙니다
+    <strong>당신입니다</strong>
+  </p>
+  <p>저는 그저 당신의 마음을 붓끝에 담아 드리는 사람입니다</p>
   <div class="footer-signature" aria-label="글결의 다짐">
     <span>한 글자에도 마음을 담겠습니다.</span>
     <strong>글결</strong>
