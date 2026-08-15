@@ -1557,22 +1557,22 @@ button {
 .site-header .brand-text{
   display:inline-block !important;
   color:var(--ink) !important;
-  font-family:"Nanum Myeongjo","BatangChe","Batang","Noto Serif KR",serif !important;
-  font-size:42px !important;
+  font-family:"KoPub Batang","KoPubWorld Batang","BatangChe","Batang","Noto Serif KR",serif !important;
+  font-size:48px !important;
   font-weight:900 !important;
-  letter-spacing:-0.14em !important;
+  letter-spacing:-0.12em !important;
   line-height:1 !important;
   transform:scaleY(1.06);
 }
 .site-header .brand-seal{
   display:block !important;
-  width:52px !important;
-  height:52px !important;
+  width:56px !important;
+  height:56px !important;
   object-fit:contain !important;
   flex:0 0 auto !important;
 }
 @media (max-width:640px){
   .site-header .brand{gap:8px !important;}
-  .site-header .brand-text{font-size:36px !important;}
-  .site-header .brand-seal{width:42px !important;height:42px !important;}
+  .site-header .brand-text{font-size:40px !important;}
+  .site-header .brand-seal{width:46px !important;height:46px !important;}
 }
