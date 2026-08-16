@@ -1,7 +1,4 @@
 node_modules/
 .env
-data/orders.json
-# gallery/settings are part of the site package
-!data/gallery.json
-!data/settings.json
+data/
 .DS_Store
