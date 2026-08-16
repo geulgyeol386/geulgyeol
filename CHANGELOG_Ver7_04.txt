@@ -1,8 +1,0 @@
-Ver7.04 변경내용
-- Railway PostgreSQL 주문 저장 기능 추가
-- DATABASE_URL이 있으면 주문/관리자/고객조회/갤러리 데이터를 PostgreSQL에서 읽고 저장
-- DATABASE_URL이 없는 로컬 실행에서는 기존 orders.json 방식을 자동 사용
-- PostgreSQL orders 테이블 자동 생성
-- 기존 orders.json에 데이터가 있고 DB가 비어 있으면 최초 실행 시 자동 이관
-- 주문번호 2026-001 형식 유지 및 동시 주문 시 중복 방지
-- 관리자 백업/복원, 수정, 삭제 API를 PostgreSQL과 연동
