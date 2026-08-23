@@ -1,0 +1,29 @@
+[
+  {
+    "workType": "벽면장식글",
+    "sentence": "",
+    "archiveTitle": "두보의 오언율시",
+    "description": "시성(詩聖) 두보(杜甫)가 지은 오언율시로, 제목은 〈제어지인조호반금대갱(齊魚知人雕胡飯錦帶羹)〉으로 알려져 있는 작품입니다. 벼슬길에서 물러나 타향을 전전하던 두보가 늙고 병든 처지에서, 과거 제어지인(齊魚知人)이라는 인물이 보내주었던 맛깔난 음식(줄밥과 순채국)을 추억하며 쓸쓸한 심경을 담아낸 시입니다.",
+    "completedDate": "",
+    "completedImage": "/images/dubo-odeon-yulsi.jpg",
+    "featuredWork": false
+  },
+  {
+    "workType": "벽면장식글",
+    "sentence": "",
+    "archiveTitle": "인연",
+    "description": "가수 이선희씨의 〈인연〉의 가삿말을 옮겨 적은 것으로 전지 크기에 한글 흘림체로 쓴 작품입니다.",
+    "completedDate": "",
+    "completedImage": "/images/inyeon.jpg",
+    "featuredWork": false
+  },
+  {
+    "workType": "벽면장식글",
+    "sentence": "",
+    "archiveTitle": "길은 처음부터 있던 것이 아니다",
+    "description": "루쉰의 『고향』 구절에 뜻을 보태어 전해오는 삶의 경구를 더하여 전지 크기(신문지 두 면 크기)에 한글 궁체 정자체로 쓴 작품입니다.",
+    "completedDate": "",
+    "completedImage": "/images/gohyang-gil.jpg",
+    "featuredWork": false
+  }
+]

@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /customer.html
+Disallow: /data/
+Disallow: /book_assets/
+Disallow: /start_local.bat
+Disallow: /server.js
+Disallow: /storage.js
+Disallow: /pricing-config.js
+
+Sitemap: https://www.ai-seoye.com/sitemap.xml
