@@ -28,10 +28,10 @@ function createGalleryViewer() {
   viewer.hidden = true;
   viewer.innerHTML = `
     <div class="gallery-viewer-backdrop" data-viewer-close></div>
-    <section class="gallery-viewer-panel" role="dialog" aria-modal="true" aria-label="완성 작품 크게 보기">
+    <section class="gallery-viewer-panel" role="dialog" aria-modal="true" aria-label="작품 크게 보기">
       <div class="gallery-viewer-topbar">
         <div>
-          <div id="galleryViewerType" class="gallery-viewer-type">완성 작품</div>
+          <div id="galleryViewerType" class="gallery-viewer-type">작품</div>
           <strong id="galleryViewerTitle">마음을 담은 글씨</strong>
         </div>
         <button type="button" class="gallery-viewer-close" data-viewer-close aria-label="닫기">×</button>
@@ -43,7 +43,7 @@ function createGalleryViewer() {
         <button type="button" id="galleryOpenOriginal">원본 새 창</button>
       </div>
       <div id="galleryViewerStage" class="gallery-viewer-stage">
-        <img id="galleryViewerImage" alt="글결 완성 작품">
+        <img id="galleryViewerImage" alt="글결 작품">
       </div>
       <div class="gallery-viewer-note">이미지를 클릭해도 확대/화면 맞춤이 전환됩니다.</div>
     </section>`;
@@ -105,8 +105,8 @@ function createGalleryViewer() {
   viewer.openWork = ({ src, workType, sentence }) => {
     currentSrc = src || '';
     image.src = currentSrc;
-    image.alt = workType || '글결 완성 작품';
-    type.textContent = workType || '완성 작품';
+    image.alt = workType || '글결 작품';
+    type.textContent = workType || '작품';
     title.textContent = sentence || '마음을 담은 글씨';
     viewer.hidden = false;
     document.body.classList.add('gallery-viewer-open');
@@ -123,21 +123,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   let activeType = '';
 
   const renderGallery = () => {
-    const normalizeWorkType = (type) => type === '가훈' ? '가훈, 사훈' : type === '액자' ? '큰글씨' : type === '인테리어용글귀' ? '벽면장식글' : type;
+    const normalizeWorkType = (type) => type === '가훈' ? '가훈, 사훈' : type === '액자' ? '큰글씨' : type === '인테리어용글귀' ? '벽면장식글' : type === '감사글' ? '감사표시글' : type;
     const visible = activeType ? rows.filter((o) => normalizeWorkType(o.workType) === activeType) : rows;
     if (!visible.length) {
-      root.innerHTML = '<div class="empty-gallery"><strong>해당 종류의 공개 작품을 준비하고 있습니다.</strong><p>고객의 동의를 받은 작품만 이곳에 소개됩니다.</p></div>';
+      root.innerHTML = '<div class="empty-gallery"><strong>해당 종류의 작품을 준비하고 있습니다.</strong><p>다른 종류의 작품은 전체보기에서 확인하실 수 있습니다.</p></div>';
       return;
     }
     root.innerHTML = visible.map((o, i) => `
       <article class="gallery-card ${o.featuredWork ? 'is-featured' : ''}" data-gallery-index="${i}">
-        <button type="button" class="gallery-image-button" aria-label="${esc(normalizeWorkType(o.workType) || '완성 작품')} 크게 보기">
-          <img src="${o.completedImage}" alt="${esc(o.workType || '글결 완성 작품')}">
+        <button type="button" class="gallery-image-button" aria-label="${esc(normalizeWorkType(o.workType) || '작품')} 크게 보기">
+          <img src="${o.completedImage}" alt="${esc(o.workType || '글결 작품')}">
           ${o.featuredWork ? '<span class="gallery-featured-badge">대표작</span>' : ''}
           <span class="gallery-zoom-hint">🔍 크게 보기</span>
         </button>
         <div class="gallery-card-info">
-          <span>${esc(normalizeWorkType(o.workType) || '완성 작품')}</span>
+          <span>${esc(normalizeWorkType(o.workType) || '작품')}</span>
           <h2>${esc(o.archiveTitle || o.sentence || '마음을 담은 글씨')}</h2>
           ${o.description ? `<p class="gallery-description">${esc(o.description)}</p>` : ''}
           ${o.completedDate ? `<p>${esc(o.completedDate)}</p>` : ''}

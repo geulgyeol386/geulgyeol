@@ -303,17 +303,25 @@ function createStorage(options = {}) {
       )
     `);
     await pool.query('CREATE INDEX IF NOT EXISTS idx_gallery_items_created_at ON gallery_items(created_at DESC)');
-    const count = await pool.query('SELECT COUNT(*)::int AS count FROM gallery_items');
     const legacy = readJsonGallery();
-    if (Number(count.rows[0].count) === 0 && legacy.length) {
+    if (legacy.length) {
+      const existing = await pool.query('SELECT title, image_data FROM gallery_items');
+      const existingKeys = new Set(existing.rows.map(row => `${String(row.title || '')}\n${String(row.image_data || '')}`));
+      let migrated = 0;
       for (const raw of legacy) {
         if (!raw || !raw.completedImage) continue;
+        const title = String(raw.archiveTitle || raw.sentence || '마음을 담은 글씨');
+        const image = String(raw.completedImage);
+        const key = `${title}\n${image}`;
+        if (existingKeys.has(key)) continue;
         await pool.query(
           `INSERT INTO gallery_items(title, category, description, image_data, completed_date, featured) VALUES($1,$2,$3,$4,$5,$6)`,
-          [String(raw.archiveTitle || raw.sentence || '마음을 담은 글씨'), String(raw.workType || '기타'), String(raw.description || ''), String(raw.completedImage), String(raw.completedDate || ''), Boolean(raw.featuredWork)]
+          [title, String(raw.workType || '기타'), String(raw.description || ''), image, String(raw.completedDate || ''), Boolean(raw.featuredWork)]
         );
+        existingKeys.add(key);
+        migrated += 1;
       }
-      console.log(`기존 gallery.json 작품을 PostgreSQL로 ${legacy.length}건 이관했습니다.`);
+      if (migrated) console.log(`기존 gallery.json 작품 ${migrated}건을 PostgreSQL로 추가 이관했습니다.`);
     }
   }
 

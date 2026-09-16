@@ -25,5 +25,86 @@
     "completedDate": "",
     "completedImage": "/images/gohyang-gil.jpg",
     "featuredWork": false
+  },
+  {
+    "workType": "축하글씨",
+    "sentence": "",
+    "archiveTitle": "굉소(轟笑)",
+    "description": "크게 웃는다는 뜻입니다. 轟笑 두 글자를 밝게 웃는 사람의 모습을 형상화한 전서체 풍의 글씨로 표현했습니다. 퇴직 후 밝고 힘찬 기운과 호쾌한 웃음을 품고 제2의 인생을 즐기시기를 바라는 마음을 담아 선물한 작품입니다.",
+    "completedDate": "",
+    "completedImage": "/images/gwangso-1.jpg",
+    "featuredWork": true
+  },
+  {
+    "workType": "연하장",
+    "sentence": "",
+    "archiveTitle": "연하장",
+    "description": "한 해의 감사와 새해의 소망을 손글씨에 담아 전합니다.",
+    "completedDate": "",
+    "completedImage": "/images/newyear-card.jpg",
+    "featuredWork": false
+  },
+  {
+    "workType": "소품글씨",
+    "sentence": "",
+    "archiveTitle": "행복",
+    "description": "평범한 하루 속 작은 기쁨과 따뜻함을 담았습니다.",
+    "completedDate": "",
+    "completedImage": "/images/happiness.jpg",
+    "featuredWork": false
+  },
+  {
+    "workType": "큰글씨",
+    "sentence": "",
+    "archiveTitle": "여민동락",
+    "description": "백성과 즐거움을 함께하고 민관이 뜻을 모으자는 의미의 관공서 사무실 액자글씨입니다.",
+    "completedDate": "",
+    "completedImage": "/images/yeomindongrak.jpg",
+    "featuredWork": false
+  },
+  {
+    "workType": "가훈, 사훈",
+    "sentence": "",
+    "archiveTitle": "자승자강",
+    "description": "스스로를 이긴 사람이 진정한 승자라는 뜻의 가훈입니다.",
+    "completedDate": "",
+    "completedImage": "/images/jaseungjagang.jpg",
+    "featuredWork": false
+  },
+  {
+    "workType": "입춘첩",
+    "sentence": "",
+    "archiveTitle": "입춘첩",
+    "description": "새봄의 좋은 기운과 평안을 기원하는 글을 정성껏 씁니다.",
+    "completedDate": "",
+    "completedImage": "/images/ipchun-card.jpg",
+    "featuredWork": false
+  },
+  {
+    "workType": "청첩장",
+    "sentence": "",
+    "archiveTitle": "청첩장",
+    "description": "두 사람의 새로운 시작을 손글씨로 정성껏 담은 청첩장입니다.",
+    "completedDate": "",
+    "completedImage": "/images/wedding-invitation.jpg",
+    "featuredWork": false
+  },
+  {
+    "workType": "축하글씨",
+    "sentence": "",
+    "archiveTitle": "결혼 축하글",
+    "description": "부부가 함께 살아가며 오래 간직할 마음을 글로 담아 표구한 선물 작품입니다.",
+    "completedDate": "",
+    "completedImage": "/images/marriage.jpg",
+    "featuredWork": false
+  },
+  {
+    "workType": "소품글씨",
+    "sentence": "",
+    "archiveTitle": "봄날처럼",
+    "description": "언제나 봄날처럼 따뜻하고 행복하기를 바라는 마음입니다.",
+    "completedDate": "",
+    "completedImage": "/images/spring-day.jpg",
+    "featuredWork": false
   }
 ]

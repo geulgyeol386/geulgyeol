@@ -1287,3 +1287,36 @@ function setupRevealAnimation() {
     observer.observe(item);
   });
 }
+
+
+// 홈페이지 작품보기 미리보기: 작품 데이터는 관리자에서 등록한 통합 작품 저장소를 사용합니다.
+document.addEventListener("DOMContentLoaded", async function () {
+  const root = document.getElementById("homeWorksGrid");
+  if (!root) return;
+  const escHome = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));
+  try {
+    const response = await fetch("/api/gallery", { cache: "no-store" });
+    if (!response.ok) throw new Error("gallery api " + response.status);
+    const rows = await response.json();
+    if (!Array.isArray(rows) || !rows.length) {
+      root.innerHTML = '<div class="work-card"><div class="work-text"><h3>등록된 작품이 없습니다.</h3><p>새 작품이 등록되면 이곳에서 소개됩니다.</p></div></div>';
+      return;
+    }
+    const normalize = (type) => type === "가훈" ? "가훈, 사훈" : type === "액자" ? "큰글씨" : type === "인테리어용글귀" ? "벽면장식글" : type === "감사글" ? "감사표시글" : type;
+    const visible = rows.slice(0, 6);
+    root.innerHTML = visible.map((o) => `
+      <article class="work-card reveal show">
+        <button type="button" class="image-button" onclick="openImage(${JSON.stringify(o.completedImage || "")}, ${JSON.stringify(o.archiveTitle || o.sentence || "작품")})">
+          <img src="${escHome(o.completedImage || "")}" alt="${escHome(o.archiveTitle || normalize(o.workType) || "글결 작품")}">
+        </button>
+        <div class="work-text">
+          <small>${escHome(normalize(o.workType) || "기타")}</small>
+          <h3>${escHome(o.archiveTitle || o.sentence || "마음을 담은 글씨")}</h3>
+          <p>${escHome(o.description || "글결서예가 정성껏 쓴 작품입니다.")}</p>
+        </div>
+      </article>`).join("");
+  } catch (error) {
+    console.error("홈페이지 작품보기 미리보기 실패", error);
+    root.innerHTML = '<div class="work-card"><div class="work-text"><h3>작품을 불러오지 못했습니다.</h3><p>전체 작품 보기에서 다시 확인해 주세요.</p></div></div>';
+  }
+});

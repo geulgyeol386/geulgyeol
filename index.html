@@ -19,8 +19,8 @@
   <meta name="twitter:title" content="글결서예 | 가훈·사훈·벽면장식 손글씨 작품">
   <meta name="twitter:description" content="가훈·사훈·벽면장식글·축하글씨 등 마음을 담은 손글씨 작품, 글결서예.">
   <meta name="twitter:image" content="https://www.ai-seoye.com/images/hero-wide-v17.jpg">
-  <link rel="stylesheet" href="style.css?v=8.4.6">
-  <link rel="stylesheet" href="final.css?v=8.4.6">
+  <link rel="stylesheet" href="style.css?v=8.4.7">
+  <link rel="stylesheet" href="final.css?v=8.4.7">
 
   <script type="application/ld+json">
   {
@@ -40,18 +40,16 @@
 <header class="site-header">
   <a class="brand" href="#top" aria-label="글결 홈">
     <span class="brand-text">글결</span>
-    <img class="brand-seal" src="images/geulgyeol-hangul-seal.png?v=8.4.6" alt="글결 한글 낙관">
+    <img class="brand-seal" src="images/geulgyeol-hangul-seal.png?v=8.4.7" alt="글결 한글 낙관">
   </a>
 
   <nav class="main-nav">
     <a href="#story">글결 이야기</a>
-    <a href="#featured">대표작품</a>
-    <a href="#works">작품 이야기</a>
+    <a href="gallery.html">작품보기</a>
     <a href="#process">제작 과정</a>
     <a href="#price">기본비용</a>
     <a href="#request">작품 의뢰</a>
     <a href="customer.html">내 주문 확인</a>
-    <a href="gallery.html">완성 작품</a>
     <a href="https://blog.naver.com/ai-seoye" target="_blank" rel="noopener noreferrer">글결서예 블로그</a>
     <a href="story/index.html">Story</a>
     <a href="admin.html" class="admin-nav-link">관리자</a>
@@ -80,7 +78,7 @@
         묵향을 담은 손글씨가 정성을 다해 전합니다.
       </p>
 <div class="hero-actions">
-        <a class="button button-dark" href="#featured">대표작품 보기</a>
+        <a class="button button-dark" href="gallery.html">작품보기</a>
         <a class="button button-light" href="#request">작품의뢰</a>
       </div>
     </div>
@@ -143,158 +141,22 @@
     </div>
   </section>
 
-  <section id="featured" class="section featured-section">
-    <div class="section-heading centered reveal">
-      <p class="eyebrow">Featured Work</p>
-      <h2>대표작품</h2>
-    </div>
-
-    <article class="featured-card reveal">
-      <button type="button" class="image-button featured-image"
-        onclick="openImage('images/gwangso-1.jpg', '굉소(轟笑)')">
-        <img src="images/gwangso-1.jpg" onerror="this.style.display='none'; this.parentElement.classList.add('missing-work-image')" alt="굉소 대표작품">
-      </button>
-
-      <div class="featured-text">
-        <p class="featured-label">굉소(轟笑)</p>
-        <h3>크게 웃는 삶</h3>
-
-        <p>
-          크게 웃는다는 뜻입니다.
-          轟笑 두 글자를 밝게 웃는 사람의 모습을 형상화한
-          전서체 풍의 글씨로 표현했습니다.
-        </p>
-
-        <p>
-          퇴직 후 밝고 힘찬 기운과 호쾌한 웃음을 품고
-          제2의 인생을 즐기시기를 바라는 마음을 담아 선물한 작품입니다.
-        </p>
-
-        <small>작품을 누르면 크게 볼 수 있습니다.</small>
-      </div>
-    </article>
-  </section>
-
-  <section id="works" class="section works-section">
+  <section id="works" class="section works-section unified-works-section">
     <div class="section-heading reveal">
-      <p class="eyebrow">Works Story</p>
-      <h2>작품 이야기</h2>
+      <p class="eyebrow">WORKS OF GEULGYEOL</p>
+      <h2>작품보기</h2>
       <p class="section-description">
-        특별한 전시 작품보다, 일상에서 마음을 전하는 글씨를 좋아합니다.
+        글결서예의 작품을 한곳에서 만나보세요.<br>
+        작품 종류를 선택하면 원하는 작품을 편하게 찾아볼 수 있습니다.
       </p>
     </div>
 
-    <div class="works-grid">
-      <article class="work-card reveal">
-        <button type="button" class="image-button" onclick="openImage('images/newyear-card.jpg', '연하장')">
-          <img src="images/newyear-card.jpg" onerror="this.style.display='none'; this.parentElement.classList.add('missing-work-image')" alt="연하장 작품">
-        </button>
-        <div class="work-text">
-          <h3>연하장</h3>
-          <p>한 해의 감사와 새해의 소망을 손글씨에 담아 전합니다.</p>
-        </div>
-      </article>
+    <div id="homeWorksGrid" class="works-grid unified-home-works-grid">
+      <div class="work-card reveal"><div class="work-text"><h3>작품을 불러오고 있습니다.</h3><p>잠시만 기다려 주세요.</p></div></div>
+    </div>
 
-      <article class="work-card reveal">
-        <button type="button" class="image-button" onclick="openImage('images/happiness.jpg', '행복')">
-          <img src="images/happiness.jpg" onerror="this.style.display='none'; this.parentElement.classList.add('missing-work-image')" alt="행복 작품">
-        </button>
-        <div class="work-text">
-          <h3>행복</h3>
-          <p>평범한 하루 속 작은 기쁨과 따뜻함을 담았습니다.</p>
-        </div>
-      </article>
-
-      <article class="work-card reveal">
-        <button type="button" class="image-button" onclick="openImage('images/yeomindongrak.jpg', '여민동락')">
-          <img src="images/yeomindongrak.jpg" onerror="this.style.display='none'; this.parentElement.classList.add('missing-work-image')" alt="여민동락 작품">
-        </button>
-        <div class="work-text">
-          <h3>여민동락</h3>
-          <p>'백성과 즐거움을 함께하고 민관이 뜻을 모으자는 의미'의 관공서 사무실 액자글씨입니다.</p>
-        </div>
-      </article>
-
-      <article class="work-card reveal">
-        <button type="button" class="image-button" onclick="openImage('images/jaseungjagang.jpg', '자승자강')">
-          <img src="images/jaseungjagang.jpg" onerror="this.style.display='none'; this.parentElement.classList.add('missing-work-image')" alt="자승자강 작품">
-        </button>
-        <div class="work-text">
-          <h3>자승자강</h3>
-          <p>스스로를 이긴 사람이 진정한 승자라는 뜻의 가훈입니다.</p>
-        </div>
-      </article>
-
-      <article class="work-card reveal">
-        <button type="button" class="image-button" onclick="openImage('images/ipchun-card.jpg', '입춘첩')">
-          <img src="images/ipchun-card.jpg" alt="입춘첩 작품">
-        </button>
-        <div class="work-text">
-          <h3>입춘첩</h3>
-          <p>새봄의 좋은 기운과 평안을 기원하는 글을 정성껏 씁니다</p>
-        </div>
-      </article>
-
-
-      <article class="work-card reveal">
-        <button type="button" class="image-button" onclick="openImage('images/wedding-invitation.jpg', '청첩장')">
-          <img src="images/wedding-invitation.jpg" alt="청첩장 작품">
-        </button>
-        <div class="work-text">
-          <h3>청첩장</h3>
-          <p>두 사람의 새로운 시작을 손글씨로 정성껏 담은 청첩장입니다</p>
-        </div>
-      </article>
-
-      <article class="work-card reveal">
-        <button type="button" class="image-button" onclick="openImage('images/marriage.jpg', '결혼 축하글')">
-          <img src="images/marriage.jpg" alt="결혼 축하글 작품">
-        </button>
-        <div class="work-text">
-          <h3>결혼 축하글</h3>
-          <p>부부가 함께 살아가며 오래 간직할 마음을 글로 담아 표구한 선물 작품입니다</p>
-        </div>
-      </article>
-
-      <article class="work-card reveal">
-        <button type="button" class="image-button" onclick="openImage('images/spring-day.jpg', '봄날처럼')">
-          <img src="images/spring-day.jpg" onerror="this.style.display='none'; this.parentElement.classList.add('missing-work-image')" alt="봄날처럼 작품">
-        </button>
-        <div class="work-text">
-          <h3>봄날처럼</h3>
-          <p>언제나 봄날처럼 따뜻하고 행복하기를 바라는 마음입니다.</p>
-        </div>
-      </article>
-
-      <article class="work-card reveal">
-        <button type="button" class="image-button" onclick="openImage('images/dubo-odeon-yulsi.jpg', '두보의 오언율시')">
-          <img src="images/dubo-odeon-yulsi.jpg" onerror="this.style.display='none'; this.parentElement.classList.add('missing-work-image')" alt="두보의 오언율시 작품">
-        </button>
-        <div class="work-text">
-          <h3>두보의 오언율시</h3>
-          <p>시성(詩聖) 두보(杜甫)가 지은 오언율시로 벼슬길에서 물러나 타향을 전전하던 두보가 늙고 병든 처지에서, 과거 제어지인(齊魚知人)이라는 인물이 보내주었던 맛깔난 음식(줄밥과 순채국)을 추억하며 쓸쓸한 심경을 담아낸 시를 육조시대 해서체로 쓴 작품입니다.</p>
-        </div>
-      </article>
-
-      <article class="work-card reveal">
-        <button type="button" class="image-button" onclick="openImage('images/inyeon.jpg', '인연')">
-          <img src="images/inyeon.jpg" onerror="this.style.display='none'; this.parentElement.classList.add('missing-work-image')" alt="인연 작품">
-        </button>
-        <div class="work-text">
-          <h3>인연</h3>
-          <p>가수 이선희씨의 인연의 가삿말을 옮겨 적은 것으로 전지크기에 한글 흘림체로 쓴 작품입니다.</p>
-        </div>
-      </article>
-
-      <article class="work-card reveal">
-        <button type="button" class="image-button" onclick="openImage('images/gohyang-gil.jpg', '길은 처음부터 있던 것이 아니다')">
-          <img src="images/gohyang-gil.jpg" onerror="this.style.display='none'; this.parentElement.classList.add('missing-work-image')" alt="길은 처음부터 있던 것이 아니다 작품">
-        </button>
-        <div class="work-text">
-          <h3>길은 처음부터 있던 것이 아니다</h3>
-          <p>루쉰의 '고향' 구절에 뜻을 보태어 전해오는 삶의 경구를 보태어 전지크기(신문지 두면크기)에 한글 궁체 정자체로 쓴 작품입니다.</p>
-        </div>
-      </article>
+    <div class="section-cta-row">
+      <a class="button button-dark" href="gallery.html">전체 작품 보기</a>
     </div>
   </section>
 
