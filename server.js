@@ -397,14 +397,33 @@ async function handleApi(req, res, pathname) {
   }
 
   if (pathname === '/api/gallery' && req.method === 'GET') {
-    const rows = (await storage.listOrders()).filter(o => o.publicWork && o.completedImage).sort((a,b) => Number(Boolean(b.featuredWork)) - Number(Boolean(a.featuredWork)) || String(b.completedDate || b.createdAtIso || '').localeCompare(String(a.completedDate || a.createdAtIso || ''))).map(publicGalleryOrder);
-    return sendJson(res, 200, rows);
+    const curated = (await storage.listGallery()).map(o => ({ workType: o.category, sentence: '', archiveTitle: o.title, description: o.description, completedDate: o.completedDate, completedImage: o.image, featuredWork: Boolean(o.featured) }));
+    const orders = (await storage.listOrders()).filter(o => o.publicWork && o.completedImage).sort((a,b) => Number(Boolean(b.featuredWork)) - Number(Boolean(a.featuredWork)) || String(b.completedDate || b.createdAtIso || '').localeCompare(String(a.completedDate || a.createdAtIso || ''))).map(publicGalleryOrder);
+    return sendJson(res, 200, [...curated, ...orders]);
   }
 
   if (pathname.startsWith('/api/admin/')) {
     if (!demandAdmin(req, res)) return;
     if (pathname === '/api/admin/orders' && req.method === 'GET') {
       return sendJson(res, 200, await storage.listOrders());
+    }
+    if (pathname === '/api/admin/gallery' && req.method === 'GET') {
+      return sendJson(res, 200, await storage.listGallery());
+    }
+    if (pathname === '/api/admin/gallery' && req.method === 'POST') {
+      const body = await readJson(req, 30 * 1024 * 1024);
+      try { return sendJson(res, 201, await storage.createGallery(body)); }
+      catch (error) { return sendJson(res, error.status || 400, { error: error.message || '작품 등록 실패' }); }
+    }
+    const galleryMatch = pathname.match(/^\/api\/admin\/gallery\/(\d+)$/);
+    if (galleryMatch && req.method === 'PUT') {
+      const body = await readJson(req, 30 * 1024 * 1024);
+      try { const updated = await storage.updateGallery(Number(galleryMatch[1]), body); return updated ? sendJson(res, 200, updated) : sendJson(res, 404, { error: 'not_found' }); }
+      catch (error) { return sendJson(res, error.status || 400, { error: error.message || '작품 수정 실패' }); }
+    }
+    if (galleryMatch && req.method === 'DELETE') {
+      const deleted = await storage.deleteGallery(Number(galleryMatch[1]));
+      return deleted ? sendJson(res, 200, { ok: true }) : sendJson(res, 404, { error: 'not_found' });
     }
     if (pathname === '/api/admin/notification-status' && req.method === 'GET') {
       const config = await telegramConfig();
@@ -432,7 +451,7 @@ async function handleApi(req, res, pathname) {
       return sendJson(res, 200, { ok: true });
     }
     if (pathname === '/api/admin/backup' && req.method === 'GET') {
-      return sendJson(res, 200, { version: '8.3', exportedAt: new Date().toISOString(), orders: await storage.listOrders() });
+      return sendJson(res, 200, { version: '8.4.4', exportedAt: new Date().toISOString(), orders: await storage.listOrders(), gallery: await storage.listGallery() });
     }
     if (pathname === '/api/admin/import' && req.method === 'POST') {
       const body = await readJson(req);

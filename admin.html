@@ -129,6 +129,22 @@
         <label><span>작품 종류</span><select id="archiveTypeFilter"><option value="">전체 종류</option><option>가훈, 사훈</option><option value="가훈" hidden>가훈 (기존)</option><option>청첩장</option><option>연하장</option><option>감사표시글</option><option>행사답례글</option><option>소품글씨</option><option>벽면장식글</option><option>큰글씨</option><option value="액자" hidden>액자 (기존)</option><option>축하글씨</option><option>입춘첩</option><option>인쇄물표지</option><option>기타</option></select></label>
         <label><span>공개 상태</span><select id="archivePublicFilter"><option value="">전체</option><option value="public">공개 중</option><option value="private">비공개</option><option value="featured">대표작</option></select></label>
       </section>
+      <section class="archive-create-card">
+        <div class="archive-create-heading"><div><p class="eyebrow">NEW WORK</p><h3 id="galleryFormTitle">새 작품 등록</h3><p>작품 사진과 정보를 한 번만 등록하면 홈페이지 갤러리에 자동으로 표시됩니다.</p></div><button id="galleryCancelButton" type="button" hidden>등록 취소</button></div>
+        <form id="galleryForm" class="gallery-form">
+          <input id="galleryEditId" type="hidden">
+          <label><span>작품 이미지 <b>*</b></span><input id="galleryImageInput" type="file" accept="image/*"><small>JPG, PNG, WEBP 이미지 권장 · 등록 시 서버 저장됩니다.</small></label>
+          <div id="galleryImagePreview" class="gallery-upload-preview"></div>
+          <div class="gallery-form-grid">
+            <label><span>작품 제목 <b>*</b></span><input id="galleryTitle" type="text" maxlength="120" required placeholder="예: 두보의 오언율시"></label>
+            <label><span>카테고리</span><select id="galleryCategory"><option>가훈, 사훈</option><option>청첩장</option><option>연하장</option><option>감사표시글</option><option>행사답례글</option><option>소품글씨</option><option>벽면장식글</option><option>큰글씨</option><option>축하글씨</option><option>입춘첩</option><option>인쇄물표지</option><option>기타</option></select></label>
+            <label><span>완성일</span><input id="galleryDate" type="date"></label>
+          </div>
+          <label><span>작품 설명</span><textarea id="galleryDescription" rows="4" maxlength="5000" placeholder="작품의 배경이나 설명을 입력해 주세요."></textarea></label>
+          <label class="check-field"><input id="galleryFeatured" type="checkbox"><span>대표작으로 표시</span></label>
+          <div class="gallery-form-actions"><button type="submit" class="primary-button">작품 저장</button></div>
+        </form>
+      </section>
       <div id="archiveList" class="archive-list"></div>
     </section>
 

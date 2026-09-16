@@ -6,6 +6,7 @@ function createStorage(options = {}) {
   const dataDir = path.resolve(options.dataDir || path.join(root, 'data'));
   const dataFile = path.join(dataDir, 'orders.json');
   const settingsFile = path.join(dataDir, 'settings.json');
+  const galleryFile = path.join(dataDir, 'gallery.json');
   const databaseUrl = process.env.DATABASE_URL || '';
   const usePostgres = Boolean(databaseUrl);
   let pool = null;
@@ -13,6 +14,7 @@ function createStorage(options = {}) {
   fs.mkdirSync(dataDir, { recursive: true });
   if (!fs.existsSync(dataFile)) fs.writeFileSync(dataFile, '[]', 'utf8');
   if (!fs.existsSync(settingsFile)) fs.writeFileSync(settingsFile, '{}', 'utf8');
+  if (!fs.existsSync(galleryFile)) fs.writeFileSync(galleryFile, '[]', 'utf8');
 
   function readJsonOrders() {
     try {
@@ -108,7 +110,8 @@ function createStorage(options = {}) {
       return;
     }
     await initPostgres();
-    console.log('주문 저장 방식: PostgreSQL');
+    await initGalleryPostgres();
+    console.log('주문·작품 저장 방식: PostgreSQL');
   }
 
   async function listOrders() {
@@ -257,6 +260,101 @@ function createStorage(options = {}) {
   }
 
 
+
+  function readJsonGallery() {
+    try {
+      const rows = JSON.parse(fs.readFileSync(galleryFile, 'utf8'));
+      return Array.isArray(rows) ? rows : [];
+    } catch { return []; }
+  }
+
+  function writeJsonGallery(rows) {
+    const temp = galleryFile + '.tmp';
+    fs.writeFileSync(temp, JSON.stringify(rows, null, 2), 'utf8');
+    fs.renameSync(temp, galleryFile);
+  }
+
+  function normalizeGalleryRow(row) {
+    return {
+      id: Number(row.gallery_id || row.id),
+      title: String(row.title || ''),
+      category: String(row.category || row.work_type || '기타'),
+      description: String(row.description || ''),
+      image: String(row.image_data || row.completedImage || ''),
+      completedDate: String(row.completed_date || row.completedDate || ''),
+      featured: Boolean(row.featured),
+      createdAt: row.created_at || row.createdAt || '',
+      updatedAt: row.updated_at || row.updatedAt || ''
+    };
+  }
+
+  async function initGalleryPostgres() {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS gallery_items (
+        gallery_id BIGSERIAL PRIMARY KEY,
+        title TEXT NOT NULL,
+        category TEXT NOT NULL DEFAULT '기타',
+        description TEXT NOT NULL DEFAULT '',
+        image_data TEXT NOT NULL,
+        completed_date TEXT NOT NULL DEFAULT '',
+        featured BOOLEAN NOT NULL DEFAULT FALSE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_gallery_items_created_at ON gallery_items(created_at DESC)');
+    const count = await pool.query('SELECT COUNT(*)::int AS count FROM gallery_items');
+    const legacy = readJsonGallery();
+    if (Number(count.rows[0].count) === 0 && legacy.length) {
+      for (const raw of legacy) {
+        if (!raw || !raw.completedImage) continue;
+        await pool.query(
+          `INSERT INTO gallery_items(title, category, description, image_data, completed_date, featured) VALUES($1,$2,$3,$4,$5,$6)`,
+          [String(raw.archiveTitle || raw.sentence || '마음을 담은 글씨'), String(raw.workType || '기타'), String(raw.description || ''), String(raw.completedImage), String(raw.completedDate || ''), Boolean(raw.featuredWork)]
+        );
+      }
+      console.log(`기존 gallery.json 작품을 PostgreSQL로 ${legacy.length}건 이관했습니다.`);
+    }
+  }
+
+  async function listGallery() {
+    if (!usePostgres) return readJsonGallery().map((x, i) => ({ id: Number(x.id || i + 1), title: x.archiveTitle || x.title || x.sentence || '마음을 담은 글씨', category: x.workType || x.category || '기타', description: x.description || '', image: x.completedImage || x.image || '', completedDate: x.completedDate || '', featured: Boolean(x.featuredWork ?? x.featured) }));
+    const result = await pool.query('SELECT * FROM gallery_items ORDER BY featured DESC, created_at DESC, gallery_id DESC');
+    return result.rows.map(normalizeGalleryRow);
+  }
+
+  async function createGallery(item) {
+    const clean = { title: String(item.title || '').trim().slice(0,120), category: String(item.category || '기타').trim().slice(0,100), description: String(item.description || '').trim().slice(0,5000), image: String(item.image || ''), completedDate: String(item.completedDate || '').slice(0,50), featured: Boolean(item.featured) };
+    if (!clean.title || !clean.image) throw new Error('작품 제목과 이미지는 필수입니다.');
+    if (!usePostgres) {
+      const rows = readJsonGallery();
+      const maxId = rows.reduce((m, r) => Math.max(m, Number(r.id) || 0), 0);
+      const row = { id: maxId + 1, workType: clean.category, archiveTitle: clean.title, description: clean.description, completedDate: clean.completedDate, completedImage: clean.image, featuredWork: clean.featured };
+      rows.push(row); writeJsonGallery(rows); return row;
+    }
+    if (clean.featured) await pool.query('UPDATE gallery_items SET featured=FALSE, updated_at=NOW()');
+    const result = await pool.query(`INSERT INTO gallery_items(title,category,description,image_data,completed_date,featured) VALUES($1,$2,$3,$4,$5,$6) RETURNING *`, [clean.title,clean.category,clean.description,clean.image,clean.completedDate,clean.featured]);
+    return normalizeGalleryRow(result.rows[0]);
+  }
+
+  async function updateGallery(id, item) {
+    const clean = { title: String(item.title || '').trim().slice(0,120), category: String(item.category || '기타').trim().slice(0,100), description: String(item.description || '').trim().slice(0,5000), image: String(item.image || ''), completedDate: String(item.completedDate || '').slice(0,50), featured: Boolean(item.featured) };
+    if (!clean.title || !clean.image) throw new Error('작품 제목과 이미지는 필수입니다.');
+    if (!usePostgres) {
+      const rows = readJsonGallery(); const idx = rows.findIndex((r,i) => Number(r.id || i+1) === Number(id)); if (idx < 0) return null;
+      rows[idx] = { ...rows[idx], workType: clean.category, archiveTitle: clean.title, description: clean.description, completedDate: clean.completedDate, completedImage: clean.image, featuredWork: clean.featured };
+      writeJsonGallery(rows); return rows[idx];
+    }
+    if (clean.featured) await pool.query('UPDATE gallery_items SET featured=FALSE, updated_at=NOW() WHERE gallery_id<>$1', [Number(id)]);
+    const result = await pool.query(`UPDATE gallery_items SET title=$1,category=$2,description=$3,image_data=$4,completed_date=$5,featured=$6,updated_at=NOW() WHERE gallery_id=$7 RETURNING *`, [clean.title,clean.category,clean.description,clean.image,clean.completedDate,clean.featured,Number(id)]);
+    return result.rows.length ? normalizeGalleryRow(result.rows[0]) : null;
+  }
+
+  async function deleteGallery(id) {
+    if (!usePostgres) { const rows=readJsonGallery(); const next=rows.filter((r,i)=>Number(r.id || i+1)!==Number(id)); if(next.length===rows.length)return false; writeJsonGallery(next); return true; }
+    const result=await pool.query('DELETE FROM gallery_items WHERE gallery_id=$1',[Number(id)]); return result.rowCount>0;
+  }
+
   function readJsonSettings() {
     try {
       const value = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
@@ -320,6 +418,10 @@ function createStorage(options = {}) {
     updateOrder,
     deleteOrder,
     importOrders,
+    listGallery,
+    createGallery,
+    updateGallery,
+    deleteGallery,
     getSettings,
     setSettings
   };
